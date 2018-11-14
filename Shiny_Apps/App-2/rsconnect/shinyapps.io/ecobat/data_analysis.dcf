@@ -1,0 +1,10 @@
+name: data_analysis
+title: Data Analysis
+account: ecobat
+server: shinyapps.io
+appId: 194445
+bundleId: 939989
+url: https://ecobat.shinyapps.io/data_analysis/
+when: 1502708327.93665
+asMultiple: FALSE
+asStatic: FALSE
