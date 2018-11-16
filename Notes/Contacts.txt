@@ -1,0 +1,22 @@
+Fiona set up Ecobat with:
+
+Paul Lintott - Paul.Lintott@uwe.ac.uk
+ and
+Sophie Davison - sophie.davison@gmail.com
+
+________________________________________________________
+
+Other contacts:
+
+John van Breda - john.vanbreda@biodiverseit.co.uk
+ Email John for problems regarding the website.
+  He thinks there is an error in the Shiny app part of the system, but he can't help with this.
+
+
+Beth Smith - info@themammalsociety.org
+ MS's Data Officer, taking over Ecobat
+
+
+
+Steve Markham - Steve.Markham@marquisandlord.com
+ Helping with coding - writing new version of Ecobat?
