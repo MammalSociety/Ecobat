@@ -40,8 +40,14 @@ df <- params$n
 #date<-as.Date(df$date) #for date graphs later, convert date column into date objects
 #date<-format(date, format="%d/%m/%Y") #formats dates
 date<-as.Date(df$date) #for date graphs later, convert date column into date objects
+
+cnames <- names(df)
+cnames[grepl('location_name$', cnames)] <- 'location_name'
+
+names(df) <- cnames
+
 date<-parse_date_time(df$date,"ymd")
-if(is.na(date)) {date<-parse_date_time(df$date,"dmy")}
+if(all(is.na(date))) {date<-parse_date_time(df$date,"dmy")}
 nights<-length(unique(df$date)) #calculate number of nights recorded for
 species<-length(unique(df$species)) #calculate number of species recorded
 ldetector<-unique(df$detector_make) #pull the names of the detectors used
@@ -906,8 +912,8 @@ graphj}
 #if time diff between 50 and 300 days
 
 if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc=="1" & spn>1) { graphj<-ggplot(ys, aes(x= date, y= percentile))+
-  geom_point(ys, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+  geom_point(ys, size=3, , shape = 1,
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1355,14 +1361,16 @@ data_wide <- spread(dfb, titles, combined)
 
 ```{r}
 tempsum <- sum(ys$temperature_c) #adds up all temperature values - can use this to determine if temperature data was entered
+if(is.na(tempsum)) tempsum <- 0
 windsum <- sum(ys$wind_speed_mph) #adds up all windspeed values - can use this to determine if windspeed data was entered
+if(is.na(windsum)) windsum <- 0
 ```
 
 
 ```{r fig.width=9, fig.height=8}
 #code for the temperature graph with one location and more than one species
 
-if(tempsum>0 & loc=="1" & spn>1) {
+if(tempsum > 0 & loc == "1" & spn > 1) {
 graphA<-ggplot(ys, aes(x=temperature_c, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
