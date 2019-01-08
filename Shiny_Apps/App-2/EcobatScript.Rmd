@@ -153,25 +153,28 @@ Summary table showing key metrics for each species recorded.
 library(plyr)
 library(rcompanion)
 
-con<-subset(wp, surv>2) #subset dataset to only include records with more than one night of surveying
+con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
 confint<-groupwiseMedian(percentile ~ sref + species, #code to get confidence intervals
                           data       = con, 
                           conf       = 0.95, 
                           R          = 1000,
-                          percentile = TRUE, 
+                          wilcox =   TRUE, 
                           bca        = FALSE, 
                           digits     = 3)
 
+confint <- transform(confint, Wilcox.lower = ifelse(Wilcox.lower == "NaN", Median, Wilcox.lower))
+confint <- transform(confint, Wilcox.upper = ifelse(Wilcox.upper == "NaN", Median, Wilcox.upper))
+
+
 mm<-merge(con, confint) #merge with subsetted dataset to put columns with the confidence intervals on the end
-mm$confint = paste(mm$Percentile.lower, mm$Percentile.upper, sep=" - ") #add a new column with CIs merged
+mm$confint = paste(mm$Wilcox.lower, mm$Wilcox.upper, sep=" - ") #add a new column with CIs merged
 
 non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
 if(nrow(non)>0) {
   non$n <- 0 #add empty columns to enable merger
 non$Median <- 0
-non$Conf.level <- 0
-non$Percentile.upper <- 0
-non$Percentile.lower <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
 non$confint <- 0}
 
 please<-rbind(mm, non) #join the two datasets back together
