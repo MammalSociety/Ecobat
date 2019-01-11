@@ -381,7 +381,7 @@ graphboxbc}
 #boxplot if more than 2 location and more than one species
 loc<-nlevels(ys$sref)
 
-if(loc>=5 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
+if(loc>=5 & loc<10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
   geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
@@ -412,7 +412,47 @@ graphboxc}
 #endcode for boxplot
 ```
 
-`r if(loc>=5 & spn>"1") {'**Figure 1.**\n Differences in activity between static detector locations, split by species and location. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
+`r if(loc>=5 & loc<10 & spn>1) {'**Figure 1.**\n Differences in activity between static detector locations, split by species and location. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
+
+
+```{r fig.width=9, fig.height=8}
+
+#boxplot if more than 2 location and more than one species
+loc<-nlevels(ys$sref)
+
+if(loc>10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
+  geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  geom_boxplot(ys, mapping = aes(fill=location_name))+
+  xlab("Location name")+
+  ylab("Bat Activity Level (Percentile)")+
+  scale_colour_grey()+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
+  expand_limits(y=c(0,100))+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(size=10, angle=90, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18),
+        legend.position="none")+
+  facet_wrap( ~ species, ncol=3) +
+    theme(strip.text.x = element_text(size=16, face="italic"))
+graphboxc}
+
+#endcode for boxplot
+```
+
+
+`r if(loc>10 & spn>"1") {'**Figure 1.**\n Differences in activity between static detector locations, split by species and location. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
 
 
 ```{r fig.width=9, fig.height=8}
@@ -422,13 +462,13 @@ ys$date<-as.Date(ys$date)
 ys$date2<-format(ys$date, "%d/%m/%Y")
 
 if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn=="1"){ graphD<-ggplot(ys, aes(x= date, y= percentile)) +
-  geom_point(ys, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+  geom_point(ys, size=3, shape=1,
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
                       breaks=c("High","Moderate/High","Moderate",
-                               "Low/Moderate","d"))+
+                               "Low/Moderate","Low"))+
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
   scale_x_date(name = "Date", date_breaks = "3 days", date_labels = "%d %b %Y")+
   theme_bw() +
@@ -445,7 +485,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn=="1"
   geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00")
   graphD}
 
 ##end code for date graph
@@ -459,7 +499,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn=="1"
 
 if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn>1) {graphD<-ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_levels))+
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
