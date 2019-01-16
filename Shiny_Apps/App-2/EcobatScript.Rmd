@@ -19,6 +19,7 @@ library(plyr)
 library(rcompanion)
 library(tidyr)
 library(lubridate)
+library(ggforce)
 ```
 
 
@@ -114,6 +115,17 @@ if(is.na(ys$date)) {ys$date<-parse_date_time(ys$date,"dmy")}
 date2<-parse_date_time(date2, "ymd")
 if(is.na(ys$date)) {ys$date<-date2}
 ys$date<-as.Date(ys$date)
+
+# calculate how many pages the dates graphs need splitting over by findng # how many unique combinations and dividing by 8 (the number of plots 
+# per page)
+
+
+# for the dates graphs, when >1 loc & >1 spp
+n_pages <- ceiling(nrow(unique(ys[,c("species", "location_name")]))/8)
+
+# when 1 loc & >1 spp
+n_pages1 <- ceiling(nrow(unique(ys[,c("species", "location_name")]))/5)
+
 ```
 
 
@@ -208,30 +220,10 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right'
 
 ***
 
-```{r}
-#not sure why this is here again
-#as it's identical to code above
-#recordsum <- ddply(df, c("Location", "Species"), summarise,
-#                   surv = length(Species))
-#now merge this back into the original csv - we don't want to delete
-#any files at this stage
-#wp<- merge(df, recordsum, c("Location","Species")) #merge with original dataset - adds surv column onto end of dataset
-#ys<-subset(wp, surv >= 5) #subset to only include species with more than 5 records per location
-
-#spn<-length(unique(ys$Species))
-#loc<-length(unique(ys$Location))
-#lspecies<-(unique(ys$Species))
-```
-
-
-
-
-
 ###Figures
 ```{r fig.width=9, fig.height=6}
 
 #boxplot if 1 location
-loc<-nlevels(ys$sref)
 
 if(loc=="1") {graphbox<-ggplot(ys, aes(x=species, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -267,7 +259,6 @@ graphbox}
 ```{r fig.width=9, fig.height=6}
 
 #boxplot if 2-5 location but only one species
-loc<-nlevels(ys$sref)
 
 if(loc>2 & loc<5 & spn=="1") {graphboxb<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -303,7 +294,6 @@ graphboxb}
 ```{r fig.width=9, fig.height=6}
 
 #boxplot if 2-5 location and more one species
-loc<-nlevels(ys$sref)
 
 if(loc>2 & loc<5 & spn>1) {graphboxb<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -323,13 +313,13 @@ if(loc>2 & loc<5 & spn>1) {graphboxb<-ggplot(ys, aes(x=location_name, y=percenti
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(size=16),
+        axis.text.x  = element_text(size=16, angle=90, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
         axis.title.y=element_text(size=18),
         legend.position="none")+
-  facet_grid(. ~ species) +
+  facet_wrap( ~ species, ncol=3) +
     theme(strip.text.x = element_text(size=16, face="italic"))
 graphboxb}
 
@@ -341,7 +331,6 @@ graphboxb}
 ```{r fig.width=9, fig.height=8}
 
 #boxplot if more than 5 location and one species
-loc<-nlevels(ys$sref)
 
 if(loc>=5 & spn=="1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -378,8 +367,7 @@ graphboxbc}
 
 ```{r fig.width=9, fig.height=8}
 
-#boxplot if more than 2 location and more than one species
-loc<-nlevels(ys$sref)
+#boxplot if more than or equal to 5 but less than 10 location and more than one species
 
 if(loc>=5 & loc<10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -399,7 +387,7 @@ if(loc>=5 & loc<10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=perc
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(size=16),
+        axis.text.x  = element_text(size=16, angle=90, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -418,7 +406,6 @@ graphboxc}
 ```{r fig.width=9, fig.height=8}
 
 #boxplot if more than 2 location and more than one species
-loc<-nlevels(ys$sref)
 
 if(loc>10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -477,7 +464,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn=="1"
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -497,7 +484,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn=="1"
 ## date ~ percentile graph if 1 location, >1 species
 #if less than 21 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn>1) {graphD<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages1)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -513,7 +504,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn>1) {
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -522,9 +513,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc=="1" & spn>1) {
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ .) +
-  theme(strip.text.y = element_text(size=16, face="italic"))
-graphD}
+  facet_grid_paginate(species ~ ., ncol=1, nrow=5, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}  
 
 ##end code for date graph
 ```
@@ -535,7 +527,11 @@ graphD}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #less than 21 days 
 
-if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>1 & loc<5 & spn>1) {graphE<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>1 & loc<5 & spn>1) {
+  
+  for (i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -551,7 +547,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>1 & loc<5 & spn
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -560,10 +556,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>1 & loc<5 & spn
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ location_name) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphE}
+        strip.text.x = element_text(size=16)))
+  }
+}
 
 #end code for date graph
 ```
@@ -589,7 +586,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>1 & loc<5 & spn
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -610,7 +607,11 @@ graphE}
 ## date ~ percentile graph if >5 location + >1 species
 #less than 21 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn>1) {graphF<-ggplot(ys, aes(x= ys$date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn>1) {
+  
+  for (i in seq_len(n_pages)) { 
+    
+  print(ggplot(ys, aes(x= ys$date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -626,7 +627,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn>1) {gr
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -635,11 +636,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn>1) {gr
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap(species ~ location_name, ncol=2) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphF}
-
+        strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -650,7 +651,10 @@ graphF}
 # date ~ percentile graph if 1 species and >5 location
 #less than 21 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn=="1"){ graphF<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn=="1") { 
+  
+  for (i in seq_len(n_pages)) { 
+    print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -666,7 +670,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn=="1"){
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -675,10 +679,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')<=21) & loc>=5 & spn=="1"){
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap( ~ location_name, ncol=2) +
-  theme(strip.text.x = element_text(size=16))
-graphF}
-
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,    scales="fixed", page=i) +
+  theme(strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -704,7 +708,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -724,7 +728,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
 ## date ~ percentile graph if 1 location, >1 species
 #if time difference is between 21 and 50 days 
 
-if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc=="1" & spn>1) { graphG<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc=="1" & spn>1) { 
+  
+  for (i in seq_len(n_pages1)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -740,7 +748,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -749,10 +757,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ .) +
-  theme(strip.text.y = element_text(size=16, face="italic"))
-graphG}
-
+  facet_grid_paginate(species ~ ., ncol=1, nrow=5, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}
 ##end code for date graph
 ```
 
@@ -762,7 +770,11 @@ graphG}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if time difference is between 21 and 50 days 
 
-if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc>1 & loc<5 & spn>1){ graphh<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc>1 & loc<5 & spn>1){
+  
+  for (i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -778,7 +790,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -787,10 +799,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ location_name) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=10, face="italic"),
-        strip.text.x = element_text(size=16))
-graphh}
+        strip.text.x = element_text(size=16)))
+  }
+}
 
 #end code for date graph
 ```
@@ -818,7 +831,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -840,7 +853,11 @@ graphh}
 ## date ~ percentile graph if >5 location + >1 species
 #if time difference is between 21 and 50 days 
 
-if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc>=5 & spn>1) {graphi<-ggplot(ys, aes(x= ys$date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days')<50) & loc>=5 & spn>1) {
+  
+  for (i in seq_len(n_pages)) { 
+    
+    print(ggplot(ys, aes(x= ys$date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -856,7 +873,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -865,11 +882,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap(species ~ location_name, ncol=2) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphi}
-
+        strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -880,7 +897,11 @@ graphi}
 # date ~ percentile graph if 1 species and >5 location
 #if time difference is between 21 and 50 days 
 
-if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days') <50) & loc>=5 & spn=="1"){ graphi<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$date),min(ys$date), units='days') <50) & loc>=5 & spn=="1"){
+  
+  for (i in seq_len(n_pages)) { 
+    
+    print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -896,7 +917,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -905,10 +926,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap( ~ location_name, ncol=2) +
-  theme(strip.text.x = element_text(size=16))
-graphi}
-
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -934,7 +955,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -954,8 +975,12 @@ graphj}
 ## date ~ percentile graph if 1 location, >1 species
 #if time diff between 50 and 300 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc=="1" & spn>1) { graphj<-ggplot(ys, aes(x= date, y= percentile))+
-  geom_point(ys, size=3, , shape = 1,
+if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages1)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
+  geom_point(ys, size=3, shape = 1,
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
@@ -970,7 +995,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -979,9 +1004,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ .) +
-  theme(strip.text.y = element_text(size=16, face="italic"))
-graphj}
+  facet_grid_paginate(species ~ ., ncol=1, nrow=5, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+ }
+}
 
 ##end code for date graph
 ```
@@ -992,7 +1018,11 @@ graphj}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if time diff between 50 and 300 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc>1 & loc<5 & spn>1) {graphk<-ggplot(ys, aes(x= ys$date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc>1 & loc<5 & spn>1) {
+  
+  for (i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= ys$date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1008,7 +1038,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -1017,10 +1047,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ location_name) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphk}
+        strip.text.x = element_text(size=16)))
+  }
+}
 
 #end code for date graph
 ```
@@ -1048,7 +1079,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -1070,7 +1101,11 @@ graphk}
 ## date ~ percentile graph if >5 location + >1 species
 #if time diff between 50 and 300 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days') <300) & loc>=5 & spn>1) {graphl<-ggplot(ys, aes(x= ys$date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days') <300) & loc>=5 & spn>1) {
+  
+for (i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= ys$date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=ys$date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1086,7 +1121,7 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -1095,10 +1130,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap(species ~ location_name, ncol=2) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphl}
+        strip.text.x = element_text(size=16)))
+  }
+}
 
 #end code for date graph
 ```
@@ -1110,7 +1146,11 @@ graphl}
 # date ~ percentile graph if 1 species and >5 location
 #if time diff between 50 and 300 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days') <300) & loc>=5 & spn=="1"){ graphl<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days') <300) & loc>=5 & spn=="1") {
+  
+   for (i in seq_len(n_pages)) { 
+     
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1135,10 +1175,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap( ~ location_name, ncol=2) +
-  theme(strip.text.x = element_text(size=16))
-graphl}
-
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -1184,7 +1224,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc=="1" & spn=="1
 ## date ~ percentile graph if 1 location, >1 species
 #if data spans more than a year
 
-if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc=="1" & spn>1) {graphm<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages1)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, 
              mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
   xlab("Night")+ #set x-axis
@@ -1210,9 +1254,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc=="1" & spn>1) 
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ .) +
-  theme(strip.text.y = element_text(size=16, face="italic"))
-graphm}
+  facet_grid_paginate(species ~ ., ncol=1, nrow=5, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}
 
 ##end code for date graph
 ```
@@ -1224,7 +1269,11 @@ graphm}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if data spans more than a year
 
-if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>1 & loc<5 & spn>1) {graphn<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>1 & loc<5 & spn>1) {
+  
+  for (i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1249,10 +1298,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>1 & loc<5 & sp
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ location_name) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-graphn}
+        strip.text.x = element_text(size=16)))
+  }
+}
 
 #end code for date graph
 ```
@@ -1303,7 +1353,11 @@ graphn}
 ## date ~ percentile graph if >5 location + >1 species
 #if data spans more than a year
 
-if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn>1) {grapho<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn>1) {
+  
+   for (i in seq_len(n_pages)) { 
+    
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1,
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1328,11 +1382,11 @@ if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn>1) {g
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap(species ~ location_name, ncol=2) +
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,  scales="fixed", page=i) +
   theme(strip.text.y = element_text(size=16, face="italic"),
-        strip.text.x = element_text(size=16))
-grapho}
-
+        strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
@@ -1345,7 +1399,11 @@ grapho}
 #if data spans more than a year
 ys$date<-as.Date(ys$date, format = "%d/%m/%Y")
 
-if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn=="1"){ grapho<-ggplot(ys, aes(x= date, y= percentile))+
+if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn=="1"){ 
+  
+  for(i in seq_len(n_pages)) {
+  
+  print(ggplot(ys, aes(x= date, y= percentile))+
   geom_point(ys, size=3, shape=1, 
              mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
@@ -1370,10 +1428,10 @@ if((difftime(max(ys$date),min(ys$date), units='days')>=300) & loc>=5 & spn=="1")
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_wrap( ~ Location, ncol=2) +
-  theme(strip.text.x = element_text(size=16))
-grapho}
-
+  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.x = element_text(size=16)))
+  }
+}
 #end code for date graph
 ```
 
