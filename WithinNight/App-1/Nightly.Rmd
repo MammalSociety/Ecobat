@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message=FALSE, comment=NULL
 
 #Libraries used
 library(tidyverse) # Enables a consistent approach to data science
+library(dplyr)
 library(suncalc) # Suntimes
 library(knitr)
 library(lubridate)
@@ -22,34 +23,34 @@ library(lubridate)
 
 ```{r}
 
-#Function BatExplorer_csv 
-BatExplorer_csv <- function(pathfile) {
-  
-  df <- readr::read_csv(pathfile, col_names= T) 
-  
-  df <- df %>% 
-    select(Recording,
-           Timestamp, 
-           `Species Text`, 
-           `Calls [#]`,
-           `Mean Call Lenght [ms]`,
-           `Mean Call Distance [ms]`,
-           `Latitude [WGS84]`,
-           `Longitude [WGS84]`
-           )
-}
-
+# #Function BatExplorer_csv 
+# BatExplorer_csv <- function(pathfile) {
+#   
+#   df <- readr::read_csv(pathfile, col_names= T) 
+#   
+#   df <- df %>% 
+#     select(Recording,
+#            Timestamp, 
+#            `Species Text`, 
+#            `Calls [#]`,
+#            `Mean Call Lenght [ms]`,
+#            `Mean Call Distance [ms]`,
+#            `Latitude [WGS84]`,
+#            `Longitude [WGS84]`
+#            )
+# }
+# 
 
 ```
 
 
 ```{r}
-# for testing purposes - load in data from Steve
-Data1 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy01.csv")
-Data2 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy02.csv")
-Data3 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy03.csv")
-
-B_data <- rbind(Data1, Data2, Data3)
+# # for testing purposes - load in data from Steve
+# Data1 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy01.csv")
+# Data2 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy02.csv")
+# Data3 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy03.csv")
+# 
+# B_data <- rbind(Data1, Data2, Data3)
 
 
 ```
@@ -58,7 +59,7 @@ B_data <- rbind(Data1, Data2, Data3)
 ```{r}
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-#df <- params$n
+df <- params$n
 ```
 
 
@@ -66,8 +67,7 @@ B_data <- rbind(Data1, Data2, Data3)
 ```{r}
 
 # Bat Time Metrics
-
-glimpse(B_data) # look at the structure 
+#glimpse(B_data) # look at the structure 
 ```
 
 
@@ -119,7 +119,7 @@ B_data2 <- B_data %>%
 ```
 
 ```{r}
-glimpse(B_data2)
+#glimpse(B_data2)
 ```
 
 
@@ -175,27 +175,27 @@ colnames(sun_data) <- c("Night", "sunset", "sunrise")
 joined_data <- dplyr::left_join(B_data2, sun_data, by="Night")
 ```
 
-## Create Variables Relative to Suntimes and Bat Observation
+<!-- ## Create Variables Relative to Suntimes and Bat Observation -->
 
-Variables relative to suntimes and bat observation  
+<!-- Variables relative to suntimes and bat observation   -->
 
-* `post_set_min` bat observation time minutes after sunset  
-* `pre_rise_min` bat observation time minutes before sunrise  
-* `post_set_hr` bat observation time hours after sunset  
-* `pre_rise_hr` bat observation time hours before sunrise  
-* `post_set_hr_int` bat observation time as an integer (hour) after sunset 
-    + `-0.5` to `0.49` hours is `0` hour  
-    + `0.5` to `1.49` hours is `1` hour  
-    + `1.5` to `2.49` hours is `2` hour  
-    + `2.5` to `3.49` hours is `3` hour ect...  
-* `pre_rise_hr_int` bat observation time as an integer (hour) before sunrise 
-    + `-0.5` to `0.49` hours is `0` hour  
-    + `0.5` to `1.49` hours is `1` hour  
-    + `1.5` to `2.49` hours is `2` hour  
-    + `2.5` to `3.49` hours is `3` hour ect...  
-* `night_length_hr`  length of the night in hours    
+<!-- * `post_set_min` bat observation time minutes after sunset   -->
+<!-- * `pre_rise_min` bat observation time minutes before sunrise   -->
+<!-- * `post_set_hr` bat observation time hours after sunset   -->
+<!-- * `pre_rise_hr` bat observation time hours before sunrise   -->
+<!-- * `post_set_hr_int` bat observation time as an integer (hour) after sunset  -->
+<!--     + `-0.5` to `0.49` hours is `0` hour   -->
+<!--     + `0.5` to `1.49` hours is `1` hour   -->
+<!--     + `1.5` to `2.49` hours is `2` hour   -->
+<!--     + `2.5` to `3.49` hours is `3` hour ect...   -->
+<!-- * `pre_rise_hr_int` bat observation time as an integer (hour) before sunrise  -->
+<!--     + `-0.5` to `0.49` hours is `0` hour   -->
+<!--     + `0.5` to `1.49` hours is `1` hour   -->
+<!--     + `1.5` to `2.49` hours is `2` hour   -->
+<!--     + `2.5` to `3.49` hours is `3` hour ect...   -->
+<!-- * `night_length_hr`  length of the night in hours     -->
 
-```{r echo = TRUE}
+```{r}
 # To make sure difference is in minutes/hours etc... use difftime 
 All_data <- joined_data %>% 
   mutate(post_set_min = as.numeric(difftime(DateTime, sunset, units='mins')),
@@ -209,14 +209,6 @@ All_data <- joined_data %>%
 glimpse(All_data)
 ```
 
-```{r eval = FALSE}
-# Not Run
-# Check how rounding hours to int works in practice
-#test_vector <- c(0.35, -0.40, 1.2, 1.5, 2.49, 3.0, 4.51, NA)
-
-#as.integer(round(test_vector, digits = 0))
-
-```
 
 ## Roost Emergence Time and Bat Observation
 
@@ -225,7 +217,7 @@ _Pelagic Publishing._
 
 For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 
-```{r echo = TRUE}
+```{r}
 #Russ(2012) Bat roost emergence times minutes after sunset
 Scientific <- c("Barbastella barbastellus",
                 "Eptesicus serotinus",
@@ -255,7 +247,7 @@ russ <- tibble(Scientific, lower, upper)
 ```
 
 
-```{r echo = TRUE}
+```{r}
 #Join with Jon Russ data with bat observation data All_data
 All_data <- dplyr::left_join(All_data, russ, by = "Scientific")
 # Look at data
@@ -266,7 +258,7 @@ glimpse(All_data)
 
 ## Sun Times
 
-```{r echo = TRUE}
+```{r}
 Table <- All_data %>% 
   select(Night, sunset, sunrise) %>% 
   distinct() %>% 
@@ -282,12 +274,15 @@ knitr::kable(Table, align = ("lrrr"))
 
 ## Count All Bat Passes
 
-```{r, echo = TRUE}
+```{r}
+
+glimpse(All_data)
 # Aggregate data into Species and count
 Table <- All_data %>%
   group_by(Scientific) %>% 
   count() %>% 
   arrange(desc(n))
+
 
 #Change column Names so more meaningful  
 colnames(Table) <- c("Scientific Name", "Count (No)")
@@ -299,7 +294,7 @@ knitr::kable(Table)
 
 ## Bat Passes by Night
 
-```{r, echo = TRUE}
+```{r}
 Table <- All_data %>%
   group_by(Scientific, Night) %>% 
   count() %>% 
@@ -318,7 +313,7 @@ knitr::kable(Table)
 This calculates the average bat passes per night by dividing the total number of
 bat passess for the night by the the night length (hrs) (`sunrise` - `sunset`).
 
-```{r, echo = TRUE}
+```{r}
 Table <- All_data %>%
   group_by(Scientific, Night, night_length_hr) %>% 
   # count number of passes per night by species - makes coloumn "n""
@@ -340,7 +335,7 @@ knitr::kable(Table, digits = 1)
 
 ## Bat Passes by Month
 
-```{r, echo = TRUE}
+```{r}
 Table <- All_data %>%
   group_by(Scientific, Month) %>% 
   count() %>% 
@@ -356,10 +351,10 @@ knitr::kable(Table)
 
 ## Time (Seconds) Bat Present  
 
-```{r echo = TRUE}
+```{r}
 Table <- All_data %>% 
   group_by(Night, Scientific) %>% 
-  summarise(total_act = sum(bat_time)) %>% 
+  summarise(total_act = sum(Bat_time)) %>% 
   spread(Night, total_act)
 
 # Make all NA's = ""
@@ -372,10 +367,10 @@ knitr::kable(Table, digits = 1)
 
 ## Time (Minutes and Seconds) Bat Present  
 
-```{r echo = TRUE}
+```{r}
 Table <- All_data %>% 
   group_by(Night, Scientific) %>% 
-  summarise(total_act = sum(bat_time)) %>% 
+  summarise(total_act = sum(Bat_time)) %>% 
   ungroup(Night, Scientific) %>% 
   mutate(total_act = round(total_act, digits = 0),
          total_act = as.character(lubridate::seconds_to_period(total_act))) %>% 
@@ -391,7 +386,7 @@ knitr::kable(Table)
 
 ## Bat Passes by Hour after Sunset
 
-```{r, echo = TRUE}
+```{r}
 Table <- All_data %>%
   group_by(Scientific, post_set_hr_int) %>% 
   count() %>% 
@@ -407,7 +402,7 @@ knitr::kable(Table)
 
 ## Bat Passes _Near_ a Roost by Night (Russ 2012)
 
-```{r echo = TRUE}
+```{r}
 Table <- All_data %>% 
   filter(post_set_min <= upper) %>% 
   group_by(Night, Scientific) %>% 
