@@ -17,6 +17,7 @@ library(dplyr)
 library(suncalc) # Suntimes
 library(knitr)
 library(lubridate)
+library(ggplot2)
 
 ```
 
@@ -42,11 +43,16 @@ B_data <- params$n
 
 # Standardize Variables - make names consistent for further manipulation; can do the same for other bat sound analysis software e.g. Kaleidoscope. Make time zone local e.g `"Europe/London"`; adjusts for daylight saving automatically.
 
+if (("Date" %in% colnames(B_data) == TRUE) &
+  ("Time" %in% colnames(B_data) == TRUE)) {
 
+B_data$Timestamp <- paste(B_data$Date, B_data$Time) }
+
+  
 #Make Time Zone Local
 B_data$DateTime <- lubridate::dmy_hms(B_data$Timestamp, tz = "Europe/London")
 
-B_data$Scientific <- stringr::str_replace(B_data$Scientific, "spec.", "spp." )
+B_data$Species <- stringr::str_replace(B_data$Species, "spec.", "spp." )
 
 ```
 
@@ -59,7 +65,25 @@ B_data$Scientific <- stringr::str_replace(B_data$Scientific, "spec.", "spp." )
 # `JustTime` time hh:mm of bat observation (12 hours added so plots correctly as `Night` i.e. dusk to dawn)
 # `bat_time` time in seconds bat present see <https://rbats-blog.updog.co/2018/06/19/a-bat-time-metric/>
 
-B_data2 <- B_data %>% 
+if ("Calls" %in% colnames(B_data) == FALSE)
+   {
+
+  B_data2 <- B_data %>% 
+  mutate(Night = DateTime - lubridate::hours(12)) %>% # DateTime minus 12 hours
+  mutate(Night = lubridate::as_date(Night)) %>%
+  mutate(Month = lubridate::month(Night, label = T)) %>% # Make Month of observation
+  mutate(JustTime = DateTime + lubridate::hours(12)) %>%
+  mutate(JustTime = hms::as.hms(stringr::str_sub(as.character(JustTime), start = 12, end = 19))) %>%
+  #mutate(Bat_time = (Calls * (Length + Distance)) / 1000) %>% 
+  #Remove NA observations 
+  filter(!is.na(Species)) %>%
+  select(Night, JustTime, DateTime, Species, Month, Latitude, Longitude)
+}
+
+
+if ("Calls" %in% colnames(B_data) == TRUE)
+   {
+  B_data2 <- B_data %>% 
   mutate(Night = DateTime - lubridate::hours(12)) %>% # DateTime minus 12 hours
   mutate(Night = lubridate::as_date(Night)) %>%
   mutate(Month = lubridate::month(Night, label = T)) %>% # Make Month of observation
@@ -67,9 +91,23 @@ B_data2 <- B_data %>%
   mutate(JustTime = hms::as.hms(stringr::str_sub(as.character(JustTime), start = 12, end = 19))) %>%
   mutate(Bat_time = (Calls * (Length + Distance)) / 1000) %>% 
   #Remove NA observations 
-  filter(!is.na(Scientific)) %>% 
-  # Select just columns needed in nice order
-  select(Night, JustTime, DateTime, Scientific, Bat_time, Month, Latitude, Longitude)
+  filter(!is.na(Species)) %>%
+  select(Night, JustTime, DateTime, Species, Bat_time, Month, Latitude, Longitude)
+}
+
+     
+
+# B_data2$Night2 <- as.Date(as.character(B_data2$Night, tz = "Europe/London", "%d/%m/%Y"), "%Y-%m-%d")
+# 
+# B_data2$Night2 <- format(as.Date(B_data2$Night, format = "%Y-%m-%d"), format = "%d/%m/%Y")
+# 
+# B_data2$Night3 <- as.Date(B_data2$Night2, format = "%d/%m/%Y")
+# 
+# glimpse(B_data2)
+# 
+# # B_data2$Night2 <- format(B_data2$Night, format=c("%d-%m-%Y"))
+# # B_data2$Night2 <- as.Date(B_data2$Night, format=c("%d-%m-%Y"))
+
 
 ```
 
@@ -159,14 +197,14 @@ All_data <- joined_data %>%
 
 ## Roost Emergence Time and Bat Observation
 
-based on: _Russ, Jon. 2012. British Bat Calls a Guide to Species Identification._ 
+Based on: _Russ, Jon. 2012. British Bat Calls a Guide to Species Identification._ 
 _Pelagic Publishing._
 
 For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 
 ```{r}
 #Russ(2012) Bat roost emergence times minutes after sunset
-Scientific <- c("Barbastella barbastellus",
+Species <- c("Barbastella barbastellus",
                 "Eptesicus serotinus",
                 "Myotis alcathoe",
                 "Myotis bechsteinii",
@@ -189,14 +227,14 @@ Scientific <- c("Barbastella barbastellus",
 
 lower <- c(25, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 18, 22, 22, 18, 40, 40, 35, 35)
 upper <- c(60, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 28, 32, 28, 32, 60, 60, 48, 50)
-russ <- tibble(Scientific, lower, upper)
+russ <- tibble(Species, lower, upper)
 
 ```
 
 
 ```{r}
 #Join with Jon Russ data with bat observation data All_data
-All_data <- dplyr::left_join(All_data, russ, by = "Scientific")
+All_data <- dplyr::left_join(All_data, russ, by = "Species")
 
 ```
 
@@ -212,11 +250,13 @@ Table <- All_data %>%
          sunset = stringr::str_sub(as.character(sunset), 11, 16),
          sunrise = stringr::str_sub(as.character(sunrise), 11, 16))
 
-colnames(Table) <- c("Night", "Sunset (hh:mm)", "Sunrise (hh:mm)", "Night Length (hours)")
+colnames(Table) <- c("Night (y-m-d)", "Sunset (hh:mm)", "Sunrise (hh:mm)", "Night Length (hours)")
 
 
 knitr::kable(Table, align = ("lrrr"))
 ```
+
+\pagebreak
 
 ## Count All Bat Passes
 
@@ -224,24 +264,29 @@ knitr::kable(Table, align = ("lrrr"))
 
 # Aggregate data into Species and count
 Table <- All_data %>%
-  group_by(Scientific) %>% 
+  group_by(Species) %>% 
   count() %>% 
   arrange(desc(n))
 
 
 #Change column Names so more meaningful  
-colnames(Table) <- c("Scientific Name", "Count (No)")
+colnames(Table) <- c("Species Name", "Count (No)")
 
 # kable is a simple table generator
 knitr::kable(Table)
 
 ```
 
+
+\pagebreak
+
 ## Bat Passes by Night
+
+The number of passes per survey night by each species
 
 ```{r}
 Table <- All_data %>%
-  group_by(Scientific, Night) %>% 
+  group_by(Species, Night) %>% 
   count() %>% 
   spread(Night, n)
 
@@ -253,6 +298,9 @@ knitr::kable(Table)
 
 ```
 
+
+\pagebreak
+
 ## Bat Passes per Hour by Night
 
 This calculates the average bat passes per night by dividing the total number of
@@ -260,7 +308,7 @@ bat passess for the night by the the night length (hrs) (`sunrise` - `sunset`).
 
 ```{r}
 Table <- All_data %>%
-  group_by(Scientific, Night, night_length_hr) %>% 
+  group_by(Species, Night, night_length_hr) %>% 
   # count number of passes per night by species - makes coloumn "n""
   count() %>% 
   # calculate average bat passes per hour for each Night and species
@@ -277,12 +325,13 @@ knitr::kable(Table, digits = 1)
 
 ```
 
+\pagebreak
 
 ## Bat Passes by Month
 
 ```{r}
 Table <- All_data %>%
-  group_by(Scientific, Month) %>% 
+  group_by(Species, Month) %>% 
   count() %>% 
   spread(Month, n)
 
@@ -293,13 +342,18 @@ Table[is.na(Table)] <- 0
 knitr::kable(Table)
 
 ```
+\pagebreak
 
-## Time (Seconds) Bat Present  
+`r if("Bat_time" %in% colnames(All_data) == TRUE) {'## Time (Seconds) Bat Present' }`
+
 
 ```{r}
-Table <- All_data %>% 
-  group_by(Night, Scientific) %>% 
-  summarise(total_act = sum(Bat_time)) %>% 
+
+if("Bat_time" %in% colnames(All_data) == TRUE) {
+
+Table <- All_data %>%
+  group_by(Night, Species) %>%
+  summarise(total_act = sum(Bat_time)) %>%
   spread(Night, total_act)
 
 # Make all NA's = ""
@@ -308,17 +362,25 @@ Table[is.na(Table)] <- 0
 # simple table with 1 decimal point
 knitr::kable(Table, digits = 1)
 
+}
+
 ```
 
-## Time (Minutes and Seconds) Bat Present  
+\pagebreak
+
+`r if("Bat_time" %in% colnames(All_data) == TRUE) {'## Time (Minutes and Seconds) Bat Present' }`
+
 
 ```{r}
-Table <- All_data %>% 
-  group_by(Night, Scientific) %>% 
-  summarise(total_act = sum(Bat_time)) %>% 
-  ungroup(Night, Scientific) %>% 
+
+if("Bat_time" %in% colnames(All_data) == TRUE) {
+  
+Table <- All_data %>%
+  group_by(Night, Species) %>%
+  summarise(total_act = sum(Bat_time)) %>%
+  ungroup(Night, Species) %>%
   mutate(total_act = round(total_act, digits = 0),
-         total_act = as.character(lubridate::seconds_to_period(total_act))) %>% 
+         total_act = as.character(lubridate::seconds_to_period(total_act))) %>%
   spread(Night, total_act)
 
 # Make all NA's = ""
@@ -326,14 +388,18 @@ Table[is.na(Table)] <- ""
 
 # simple table
 knitr::kable(Table)
+}
+
 
 ```
+
+\pagebreak
 
 ## Bat Passes by Hour after Sunset
 
 ```{r}
 Table <- All_data %>%
-  group_by(Scientific, post_set_hr_int) %>% 
+  group_by(Species, post_set_hr_int) %>% 
   count() %>% 
   spread(post_set_hr_int, n)
 
@@ -344,13 +410,14 @@ Table[is.na(Table)] <- 0
 knitr::kable(Table)
 
 ```
+\pagebreak
 
 ## Bat Passes _Near_ a Roost by Night (Russ 2012)
 
 ```{r}
 Table <- All_data %>% 
   filter(post_set_min <= upper) %>% 
-  group_by(Night, Scientific) %>% 
+  group_by(Night, Species) %>% 
   count() %>% 
   spread(Night, n)
 

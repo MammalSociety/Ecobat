@@ -1,4 +1,4 @@
-Recording,Timestamp,Scientific,Calls,Length,Distance,Latitude,Longitude
+Recording,Timestamp,Species,Calls,Length,Distance,Latitude,Longitude
 24910051,07/05/2018 05:12,Pipistrellus pygmaeus,23,7,90,50.517018,-4.16256
 24910009,06/05/2018 21:05,Pipistrellus pygmaeus,12,7,90,NA,NA
 24910010,06/05/2018 21:06,Nyctalus noctula,18,23.8,340,NA,NA
