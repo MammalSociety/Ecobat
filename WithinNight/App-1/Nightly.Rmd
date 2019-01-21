@@ -3,7 +3,7 @@ title: "Ecobat Bat Activity Analysis"
 author: '`r params$Author`'
 date: '`r strftime(Sys.time(), format = "%d/%m/%Y")`'
 output: word_document
- params:
+params:
   n: NA
   Author: NA
 ---
@@ -21,37 +21,12 @@ library(lubridate)
 ```
 
 
-```{r}
-
-# #Function BatExplorer_csv 
-# BatExplorer_csv <- function(pathfile) {
-#   
-#   df <- readr::read_csv(pathfile, col_names= T) 
-#   
-#   df <- df %>% 
-#     select(Recording,
-#            Timestamp, 
-#            `Species Text`, 
-#            `Calls [#]`,
-#            `Mean Call Lenght [ms]`,
-#            `Mean Call Distance [ms]`,
-#            `Latitude [WGS84]`,
-#            `Longitude [WGS84]`
-#            )
-# }
-# 
-
-```
 
 
 ```{r}
-# # for testing purposes - load in data from Steve
-# Data1 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy01.csv")
-# Data2 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy02.csv")
-# Data3 <- BatExplorer_csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/Tavy03.csv")
-# 
-# B_data <- rbind(Data1, Data2, Data3)
-
+# # for testing purposes - load in test data
+# B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/test2.csv")
+#glimpse(B_data)
 
 ```
 
@@ -59,17 +34,8 @@ library(lubridate)
 ```{r}
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-df <- params$n
+B_data <- params$n
 ```
-
-
-
-```{r}
-
-# Bat Time Metrics
-#glimpse(B_data) # look at the structure 
-```
-
 
 
 ```{r}
@@ -77,16 +43,9 @@ df <- params$n
 # Standardize Variables - make names consistent for further manipulation; can do the same for other bat sound analysis software e.g. Kaleidoscope. Make time zone local e.g `"Europe/London"`; adjusts for daylight saving automatically.
 
 
-B_data$Scientific <-  B_data$`Species Text`
-
-#Make Time Zone Local 
+#Make Time Zone Local
 B_data$DateTime <- lubridate::dmy_hms(B_data$Timestamp, tz = "Europe/London")
-B_data$Calls <- B_data$`Calls [#]`
-B_data$Length <- B_data$`Mean Call Lenght [ms]`
-B_data$Distance <- B_data$`Mean Call Distance [ms]`
-B_data$Latitude <- B_data$`Latitude [WGS84]`
-B_data$Longitude <- B_data$`Longitude [WGS84]`
-# Change `spec.` to `spp.`
+
 B_data$Scientific <- stringr::str_replace(B_data$Scientific, "spec.", "spp." )
 
 ```
@@ -112,14 +71,6 @@ B_data2 <- B_data %>%
   # Select just columns needed in nice order
   select(Night, JustTime, DateTime, Scientific, Bat_time, Month, Latitude, Longitude)
 
-#B_data2$Night <- as.Date(B_data2$Night)
-
-#B_data2$JustTime <- format(strptime(B_data2$JustTime, "%Y-%m-%d %H:%M:%S"), "%H:%M:%S")
-
-```
-
-```{r}
-#glimpse(B_data2)
 ```
 
 
@@ -153,26 +104,23 @@ setdata <- setdata %>%
   select(date, sunset) %>% 
   mutate(date = lubridate::as_date(date))
 
-glimpse(setdata)
-
 # Select  sunrise date and time
 risedata <- risedata %>% 
   select(date, sunrise) %>% 
   mutate(date = lubridate::as_date(date)) %>%
   mutate(date = date - lubridate::days(1))
 
-glimpse(risedata)
 
 # Combine sunset and risedata by 
 sun_data <- dplyr::full_join(setdata, risedata, by="date")
 
-glimpse(sun_data)
 
 # Rename date as Night
 colnames(sun_data) <- c("Night", "sunset", "sunrise")
 
 # Join bat data with the sundata by Night
 joined_data <- dplyr::left_join(B_data2, sun_data, by="Night")
+
 ```
 
 <!-- ## Create Variables Relative to Suntimes and Bat Observation -->
@@ -205,8 +153,7 @@ All_data <- joined_data %>%
          post_set_hr_int = as.integer(round(post_set_hr, digits = 0)),
          pre_rise_hr_int = as.integer(round(pre_rise_hr, digits = 0)),
          night_length_hr = as.numeric(difftime(sunrise, sunset, units='hours')))
-# Look at data
-glimpse(All_data)
+
 ```
 
 
@@ -250,8 +197,7 @@ russ <- tibble(Scientific, lower, upper)
 ```{r}
 #Join with Jon Russ data with bat observation data All_data
 All_data <- dplyr::left_join(All_data, russ, by = "Scientific")
-# Look at data
-glimpse(All_data)
+
 ```
 
 # Summary Tables  
@@ -276,7 +222,6 @@ knitr::kable(Table, align = ("lrrr"))
 
 ```{r}
 
-glimpse(All_data)
 # Aggregate data into Species and count
 Table <- All_data %>%
   group_by(Scientific) %>% 
