@@ -19,6 +19,7 @@ library(knitr)
 library(lubridate)
 library(ggplot2)
 library(ggforce)
+library(pander)
 
 ```
 
@@ -272,6 +273,7 @@ colnames(Table) <- c("Night (y-m-d)", "Sunset (hh:mm)", "Sunrise (hh:mm)", "Nigh
 
 
 knitr::kable(Table, align = ("lrrr"))
+
 ```
 
 \pagebreak
@@ -311,8 +313,15 @@ Table <- All_data %>%
 # Make all NA's = 0
 Table[is.na(Table)] <- 0
 
-# simple table
-knitr::kable(Table)
+new <- melt(Table, id="Species")
+new2 <- melt(new, id=c("Species", "variable"))
+
+new3 <- t(Table)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+panderOptions('table.split.table', 80)
+pander(Table, style="rmarkdown")
+
 
 ```
 
