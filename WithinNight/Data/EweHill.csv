@@ -1,4 +1,4 @@
-Species,Number,Location ID,Date,Time,Latitude,Longitude
+Species,Number,Detector.ID,Date,Time,Latitude,Longitude
 Pipistrellus pipistrellus,1,A3,06/07/2018,01:05:54,55.15971667,-3.157716667
 Pipistrellus pipistrellus,1,A3,06/07/2018,01:06:02,55.15971667,-3.157716667
 Pipistrellus pipistrellus,1,A3,06/07/2018,01:06:08,55.15971667,-3.157716667

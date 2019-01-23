@@ -1,0 +1,13 @@
+---
+title: "Word doc template"
+author: "Beth"
+date: "23rd Jan 2019"
+output: word_document
+---
+
+Save this Rmd file to a convenient directory using a descriptive name. I called mine draft-styles.Rmd.
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message=FALSE, comment=NULL)
+```
+

@@ -1,4 +1,4 @@
-Species,Number,Location ID,Date,Time,Latitude,Longitude
+Species,Number,Detector.ID,Date,Time,Latitude,Longitude
 Nyctalus spp.,1,A2,07/07/2018,01:50:29,55.01658333,-5.008966667
 Nyctalus spp.,1,A2,07/07/2018,01:50:33,55.01658333,-5.008966667
 Nyctalus spp.,1,A2,07/07/2018,01:50:42,55.01658333,-5.008966667
