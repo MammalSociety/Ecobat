@@ -1,0 +1,8063 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Authour: NA" />
+
+<meta name="date" content="2019-06-02" />
+
+<title>Ecobat: Nightly Bat Activity Analysis</title>
+
+<script src="Nightly_html_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Nightly_html_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="Nightly_html_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Nightly_html_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Nightly_html_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="Nightly_html_files/navigation-1.1/tabsets.js"></script>
+<link href="Nightly_html_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Nightly_html_files/highlightjs-9.12.0/highlight.js"></script>
+<script src="Nightly_html_files/kePrint-0.0.1/kePrint.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Ecobat: Nightly Bat Activity Analysis</h1>
+<h4 class="author"><em>Authour: NA</em></h4>
+<h4 class="date"><em>06/02/2019</em></h4>
+
+</div>
+
+
+<div class="figure">
+<img src="TMS_logo.png" alt="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats." width="100" />
+<p class="caption">
+This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats.
+</p>
+</div>
+
+<p><em>The analyses are based on data supplied by the user to the Mammal Society’s Ecobat website. The outputs are designed to assist decision-making, but do not replace expert interpretation by the user.</em></p>
+<div id="summary" class="section level1">
+<h1>Summary</h1>
+<p>Bat surveys were conducted on 49 nights between 2018-07-09 and 2018-09-09, using 5 static bat detectors. Throughout this period 7 species were recorded.</p>
+
+</div>
+<div id="sunrise-and-sunset-times" class="section level1">
+<h1>Sunrise and Sunset Times</h1>
+<p><strong>The times of sunset and sunrise the following morning for surveys beginning on the date shown.</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center;">
+Night (y-m-d)
+</th>
+<th style="text-align:center;">
+Sunset (hh:mm)
+</th>
+<th style="text-align:center;">
+Sunrise (hh:mm)
+</th>
+<th style="text-align:center;">
+Night Length (hours)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+2018-07-09
+</td>
+<td style="text-align:center;">
+22:05
+</td>
+<td style="text-align:center;">
+05:02
+</td>
+<td style="text-align:center;">
+7.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-10
+</td>
+<td style="text-align:center;">
+22:04
+</td>
+<td style="text-align:center;">
+05:04
+</td>
+<td style="text-align:center;">
+7.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-11
+</td>
+<td style="text-align:center;">
+22:03
+</td>
+<td style="text-align:center;">
+05:05
+</td>
+<td style="text-align:center;">
+7.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-12
+</td>
+<td style="text-align:center;">
+22:02
+</td>
+<td style="text-align:center;">
+05:06
+</td>
+<td style="text-align:center;">
+7.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-13
+</td>
+<td style="text-align:center;">
+22:01
+</td>
+<td style="text-align:center;">
+05:07
+</td>
+<td style="text-align:center;">
+7.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-14
+</td>
+<td style="text-align:center;">
+22:00
+</td>
+<td style="text-align:center;">
+05:09
+</td>
+<td style="text-align:center;">
+7.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-15
+</td>
+<td style="text-align:center;">
+21:59
+</td>
+<td style="text-align:center;">
+05:10
+</td>
+<td style="text-align:center;">
+7.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-16
+</td>
+<td style="text-align:center;">
+21:58
+</td>
+<td style="text-align:center;">
+05:12
+</td>
+<td style="text-align:center;">
+7.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-17
+</td>
+<td style="text-align:center;">
+21:56
+</td>
+<td style="text-align:center;">
+05:13
+</td>
+<td style="text-align:center;">
+7.3
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-18
+</td>
+<td style="text-align:center;">
+21:55
+</td>
+<td style="text-align:center;">
+05:15
+</td>
+<td style="text-align:center;">
+7.3
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-22
+</td>
+<td style="text-align:center;">
+21:49
+</td>
+<td style="text-align:center;">
+05:21
+</td>
+<td style="text-align:center;">
+7.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-23
+</td>
+<td style="text-align:center;">
+21:48
+</td>
+<td style="text-align:center;">
+05:23
+</td>
+<td style="text-align:center;">
+7.6
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-24
+</td>
+<td style="text-align:center;">
+21:46
+</td>
+<td style="text-align:center;">
+05:24
+</td>
+<td style="text-align:center;">
+7.6
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-25
+</td>
+<td style="text-align:center;">
+21:45
+</td>
+<td style="text-align:center;">
+05:26
+</td>
+<td style="text-align:center;">
+7.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-26
+</td>
+<td style="text-align:center;">
+21:43
+</td>
+<td style="text-align:center;">
+05:28
+</td>
+<td style="text-align:center;">
+7.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-29
+</td>
+<td style="text-align:center;">
+21:38
+</td>
+<td style="text-align:center;">
+05:33
+</td>
+<td style="text-align:center;">
+7.9
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-07-30
+</td>
+<td style="text-align:center;">
+21:36
+</td>
+<td style="text-align:center;">
+05:35
+</td>
+<td style="text-align:center;">
+8.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-01
+</td>
+<td style="text-align:center;">
+21:32
+</td>
+<td style="text-align:center;">
+05:38
+</td>
+<td style="text-align:center;">
+8.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-02
+</td>
+<td style="text-align:center;">
+21:30
+</td>
+<td style="text-align:center;">
+05:40
+</td>
+<td style="text-align:center;">
+8.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-03
+</td>
+<td style="text-align:center;">
+21:28
+</td>
+<td style="text-align:center;">
+05:42
+</td>
+<td style="text-align:center;">
+8.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-04
+</td>
+<td style="text-align:center;">
+21:26
+</td>
+<td style="text-align:center;">
+05:44
+</td>
+<td style="text-align:center;">
+8.3
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-05
+</td>
+<td style="text-align:center;">
+21:24
+</td>
+<td style="text-align:center;">
+05:46
+</td>
+<td style="text-align:center;">
+8.4
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-06
+</td>
+<td style="text-align:center;">
+21:22
+</td>
+<td style="text-align:center;">
+05:47
+</td>
+<td style="text-align:center;">
+8.4
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-07
+</td>
+<td style="text-align:center;">
+21:20
+</td>
+<td style="text-align:center;">
+05:49
+</td>
+<td style="text-align:center;">
+8.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-08
+</td>
+<td style="text-align:center;">
+21:18
+</td>
+<td style="text-align:center;">
+05:51
+</td>
+<td style="text-align:center;">
+8.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-09
+</td>
+<td style="text-align:center;">
+21:16
+</td>
+<td style="text-align:center;">
+05:53
+</td>
+<td style="text-align:center;">
+8.6
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-10
+</td>
+<td style="text-align:center;">
+21:14
+</td>
+<td style="text-align:center;">
+05:55
+</td>
+<td style="text-align:center;">
+8.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-11
+</td>
+<td style="text-align:center;">
+21:12
+</td>
+<td style="text-align:center;">
+05:57
+</td>
+<td style="text-align:center;">
+8.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-12
+</td>
+<td style="text-align:center;">
+21:10
+</td>
+<td style="text-align:center;">
+05:59
+</td>
+<td style="text-align:center;">
+8.8
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-13
+</td>
+<td style="text-align:center;">
+21:08
+</td>
+<td style="text-align:center;">
+06:00
+</td>
+<td style="text-align:center;">
+8.9
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-15
+</td>
+<td style="text-align:center;">
+21:03
+</td>
+<td style="text-align:center;">
+06:04
+</td>
+<td style="text-align:center;">
+9.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-16
+</td>
+<td style="text-align:center;">
+21:01
+</td>
+<td style="text-align:center;">
+06:06
+</td>
+<td style="text-align:center;">
+9.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-17
+</td>
+<td style="text-align:center;">
+20:59
+</td>
+<td style="text-align:center;">
+06:08
+</td>
+<td style="text-align:center;">
+9.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-19
+</td>
+<td style="text-align:center;">
+20:54
+</td>
+<td style="text-align:center;">
+06:12
+</td>
+<td style="text-align:center;">
+9.3
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-20
+</td>
+<td style="text-align:center;">
+20:52
+</td>
+<td style="text-align:center;">
+06:14
+</td>
+<td style="text-align:center;">
+9.4
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-22
+</td>
+<td style="text-align:center;">
+20:47
+</td>
+<td style="text-align:center;">
+06:17
+</td>
+<td style="text-align:center;">
+9.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-24
+</td>
+<td style="text-align:center;">
+20:42
+</td>
+<td style="text-align:center;">
+06:21
+</td>
+<td style="text-align:center;">
+9.6
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-25
+</td>
+<td style="text-align:center;">
+20:40
+</td>
+<td style="text-align:center;">
+06:23
+</td>
+<td style="text-align:center;">
+9.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-27
+</td>
+<td style="text-align:center;">
+20:35
+</td>
+<td style="text-align:center;">
+06:27
+</td>
+<td style="text-align:center;">
+9.9
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-29
+</td>
+<td style="text-align:center;">
+20:30
+</td>
+<td style="text-align:center;">
+06:30
+</td>
+<td style="text-align:center;">
+10.0
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-08-30
+</td>
+<td style="text-align:center;">
+20:28
+</td>
+<td style="text-align:center;">
+06:32
+</td>
+<td style="text-align:center;">
+10.1
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-01
+</td>
+<td style="text-align:center;">
+20:23
+</td>
+<td style="text-align:center;">
+06:36
+</td>
+<td style="text-align:center;">
+10.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-02
+</td>
+<td style="text-align:center;">
+20:20
+</td>
+<td style="text-align:center;">
+06:38
+</td>
+<td style="text-align:center;">
+10.3
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-03
+</td>
+<td style="text-align:center;">
+20:18
+</td>
+<td style="text-align:center;">
+06:40
+</td>
+<td style="text-align:center;">
+10.4
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-04
+</td>
+<td style="text-align:center;">
+20:15
+</td>
+<td style="text-align:center;">
+06:42
+</td>
+<td style="text-align:center;">
+10.4
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-05
+</td>
+<td style="text-align:center;">
+20:12
+</td>
+<td style="text-align:center;">
+06:43
+</td>
+<td style="text-align:center;">
+10.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-07
+</td>
+<td style="text-align:center;">
+20:07
+</td>
+<td style="text-align:center;">
+06:47
+</td>
+<td style="text-align:center;">
+10.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-08
+</td>
+<td style="text-align:center;">
+20:05
+</td>
+<td style="text-align:center;">
+06:49
+</td>
+<td style="text-align:center;">
+10.7
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2018-09-09
+</td>
+<td style="text-align:center;">
+20:02
+</td>
+<td style="text-align:center;">
+06:51
+</td>
+<td style="text-align:center;">
+10.8
+</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+<div id="counts-of-bat-passes" class="section level1">
+<h1>Counts of Bat Passes</h1>
+<div id="all-detectors" class="section level2">
+<h2>All detectors</h2>
+<p><strong>The number of passes recorded for each species across all of the detectors.</strong></p>
+
+<thead>
+<tr>
+<th style="text-align:left;">
+Species
+</th>
+<th style="text-align:center;">
+Count (No)
+</th>
+<th style="text-align:center;">
+Percentage of total (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+0.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+563
+</td>
+<td style="text-align:center;">
+26.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+1296
+</td>
+<td style="text-align:center;">
+60.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:center;">
+25
+</td>
+<td style="text-align:center;">
+1.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+44
+</td>
+<td style="text-align:center;">
+2.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+0.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+199
+</td>
+<td style="text-align:center;">
+9.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Total
+</td>
+<td style="text-align:center;">
+2138
+</td>
+<td style="text-align:center;">
+100.0
+</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="counts-of-bat-passes-1" class="section level1">
+<h1>Counts of Bat Passes</h1>
+<div id="per-detector" class="section level2">
+<h2>Per Detector</h2>
+<p><strong>The number of passes recorded for each species at each detector.</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+Species
+</th>
+<th style="text-align:center;">
+Detector ID
+</th>
+<th style="text-align:center;">
+Count (No)
+</th>
+<th style="text-align:center;">
+Percentage by Detector (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+0.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+1
+</td>
+<td style="text-align:center;">
+0.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+100
+</td>
+<td style="text-align:center;">
+19.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+d6
+</td>
+<td style="text-align:center;">
+195
+</td>
+<td style="text-align:center;">
+44.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+49
+</td>
+<td style="text-align:center;">
+16.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+144
+</td>
+<td style="text-align:center;">
+24.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:center;">
+d9
+</td>
+<td style="text-align:center;">
+75
+</td>
+<td style="text-align:center;">
+26.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+361
+</td>
+<td style="text-align:center;">
+69.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+d6
+</td>
+<td style="text-align:center;">
+193
+</td>
+<td style="text-align:center;">
+43.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+191
+</td>
+<td style="text-align:center;">
+64.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+380
+</td>
+<td style="text-align:center;">
+63.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:center;">
+d9
+</td>
+<td style="text-align:center;">
+171
+</td>
+<td style="text-align:center;">
+60.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+6
+</td>
+<td style="text-align:center;">
+1.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+4
+</td>
+<td style="text-align:center;">
+1.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+8
+</td>
+<td style="text-align:center;">
+1.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:center;">
+d9
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+2.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+1.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+d6
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+2.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+8
+</td>
+<td style="text-align:center;">
+2.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+11
+</td>
+<td style="text-align:center;">
+1.8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:center;">
+d9
+</td>
+<td style="text-align:center;">
+7
+</td>
+<td style="text-align:center;">
+2.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+3
+</td>
+<td style="text-align:center;">
+0.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:center;">
+d6
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+0.5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+2
+</td>
+<td style="text-align:center;">
+0.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+d10
+</td>
+<td style="text-align:center;">
+42
+</td>
+<td style="text-align:center;">
+8.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+d6
+</td>
+<td style="text-align:center;">
+41
+</td>
+<td style="text-align:center;">
+9.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+d7
+</td>
+<td style="text-align:center;">
+42
+</td>
+<td style="text-align:center;">
+14.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+d8
+</td>
+<td style="text-align:center;">
+50
+</td>
+<td style="text-align:center;">
+8.4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:center;">
+d9
+</td>
+<td style="text-align:center;">
+24
+</td>
+<td style="text-align:center;">
+8.5
+</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+</div>
+</div>
+<div id="percentage-of-bat-passes-at-each-detector" class="section level1">
+<h1>Percentage of bat passes at each detector</h1>
+<p></p>
+<p><img src="Nightly_html_files/figure-html/unnamed-chunk-13-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p></p>
+<hr />
+<p></p>
+</div>
+<div id="total-bat-passes-by-night" class="section level1">
+<h1>Total Bat Passes by Night</h1>
+<div id="all-detectors-1" class="section level2">
+<h2>All Detectors</h2>
+
+<thead>
+<tr>
+<th style="text-align:left;">
+Spp
+</th>
+<th style="text-align:right;">
+2018-07-09
+</th>
+<th style="text-align:right;">
+2018-07-10
+</th>
+<th style="text-align:right;">
+2018-07-11
+</th>
+<th style="text-align:right;">
+2018-07-12
+</th>
+<th style="text-align:right;">
+2018-07-13
+</th>
+<th style="text-align:right;">
+2018-07-14
+</th>
+<th style="text-align:right;">
+2018-07-15
+</th>
+<th style="text-align:right;">
+2018-07-16
+</th>
+<th style="text-align:right;">
+2018-07-17
+</th>
+<th style="text-align:right;">
+2018-07-18
+</th>
+<th style="text-align:right;">
+2018-07-22
+</th>
+<th style="text-align:right;">
+2018-07-23
+</th>
+<th style="text-align:right;">
+2018-07-24
+</th>
+<th style="text-align:right;">
+2018-07-25
+</th>
+<th style="text-align:right;">
+2018-07-26
+</th>
+<th style="text-align:right;">
+2018-07-29
+</th>
+<th style="text-align:right;">
+2018-07-30
+</th>
+<th style="text-align:right;">
+2018-08-01
+</th>
+<th style="text-align:right;">
+2018-08-02
+</th>
+<th style="text-align:right;">
+2018-08-03
+</th>
+<th style="text-align:right;">
+2018-08-04
+</th>
+<th style="text-align:right;">
+2018-08-05
+</th>
+<th style="text-align:right;">
+2018-08-06
+</th>
+<th style="text-align:right;">
+2018-08-07
+</th>
+<th style="text-align:right;">
+2018-08-08
+</th>
+<th style="text-align:right;">
+2018-08-09
+</th>
+<th style="text-align:right;">
+2018-08-10
+</th>
+<th style="text-align:right;">
+2018-08-11
+</th>
+<th style="text-align:right;">
+2018-08-12
+</th>
+<th style="text-align:right;">
+2018-08-13
+</th>
+<th style="text-align:right;">
+2018-08-15
+</th>
+<th style="text-align:right;">
+2018-08-16
+</th>
+<th style="text-align:right;">
+2018-08-17
+</th>
+<th style="text-align:right;">
+2018-08-19
+</th>
+<th style="text-align:right;">
+2018-08-20
+</th>
+<th style="text-align:right;">
+2018-08-22
+</th>
+<th style="text-align:right;">
+2018-08-24
+</th>
+<th style="text-align:right;">
+2018-08-25
+</th>
+<th style="text-align:right;">
+2018-08-27
+</th>
+<th style="text-align:right;">
+2018-08-29
+</th>
+<th style="text-align:right;">
+2018-08-30
+</th>
+<th style="text-align:right;">
+2018-09-01
+</th>
+<th style="text-align:right;">
+2018-09-02
+</th>
+<th style="text-align:right;">
+2018-09-03
+</th>
+<th style="text-align:right;">
+2018-09-04
+</th>
+<th style="text-align:right;">
+2018-09-05
+</th>
+<th style="text-align:right;">
+2018-09-07
+</th>
+<th style="text-align:right;">
+2018-09-08
+</th>
+<th style="text-align:right;">
+2018-09-09
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+74
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+80
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+34
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+183
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+70
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+172
+</td>
+<td style="text-align:right;">
+36
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+132
+</td>
+<td style="text-align:right;">
+31
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+36
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+157
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+48
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+40
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+228
+</td>
+<td style="text-align:right;">
+74
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+57
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+18
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+55
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+42
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-07-09</th>
+<th align="left">2018-07-10</th>
+<th align="left">2018-07-11</th>
+<th align="left">2018-07-12</th>
+<th align="left">2018-07-13</th>
+<th align="left">2018-07-14</th>
+<th align="left">2018-07-15</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">12</td>
+<td align="left">10</td>
+<td align="left">1</td>
+<td align="left">43</td>
+<td align="left">17</td>
+<td align="left">2</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-07-16</th>
+<th align="left">2018-07-17</th>
+<th align="left">2018-07-18</th>
+<th align="left">2018-07-22</th>
+<th align="left">2018-07-23</th>
+<th align="left">2018-07-24</th>
+<th align="left">2018-07-25</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">0</td>
+<td align="left">17</td>
+<td align="left">8</td>
+<td align="left">3</td>
+<td align="left">74</td>
+<td align="left">5</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">4</td>
+<td align="left">172</td>
+<td align="left">36</td>
+<td align="left">5</td>
+<td align="left">132</td>
+<td align="left">31</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">18</td>
+<td align="left">7</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-07-26</th>
+<th align="left">2018-07-29</th>
+<th align="left">2018-07-30</th>
+<th align="left">2018-08-01</th>
+<th align="left">2018-08-02</th>
+<th align="left">2018-08-03</th>
+<th align="left">2018-08-04</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">3</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">5</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">11</td>
+<td align="left">35</td>
+<td align="left">4</td>
+<td align="left">3</td>
+<td align="left">36</td>
+<td align="left">19</td>
+<td align="left">25</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">0</td>
+<td align="left">2</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">8</td>
+<td align="left">2</td>
+<td align="left">3</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-08-05</th>
+<th align="left">2018-08-06</th>
+<th align="left">2018-08-07</th>
+<th align="left">2018-08-08</th>
+<th align="left">2018-08-09</th>
+<th align="left">2018-08-10</th>
+<th align="left">2018-08-11</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">0</td>
+<td align="left">80</td>
+<td align="left">2</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">34</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">9</td>
+<td align="left">157</td>
+<td align="left">6</td>
+<td align="left">2</td>
+<td align="left">5</td>
+<td align="left">48</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">1</td>
+<td align="left">3</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">3</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">6</td>
+<td align="left">1</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">2</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">2</td>
+<td align="left">55</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">3</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-08-12</th>
+<th align="left">2018-08-13</th>
+<th align="left">2018-08-15</th>
+<th align="left">2018-08-16</th>
+<th align="left">2018-08-17</th>
+<th align="left">2018-08-19</th>
+<th align="left">2018-08-20</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">4</td>
+<td align="left">2</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">183</td>
+<td align="left">21</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">40</td>
+<td align="left">10</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">228</td>
+<td align="left">74</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">7</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">1</td>
+<td align="left">3</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">3</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">6</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">42</td>
+<td align="left">13</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table continues below</caption>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-08-22</th>
+<th align="left">2018-08-24</th>
+<th align="left">2018-08-25</th>
+<th align="left">2018-08-27</th>
+<th align="left">2018-08-29</th>
+<th align="left">2018-08-30</th>
+<th align="left">2018-09-01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">7</td>
+<td align="left">0</td>
+<td align="left">5</td>
+<td align="left">4</td>
+<td align="left">14</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">5</td>
+<td align="left">2</td>
+<td align="left">57</td>
+<td align="left">4</td>
+<td align="left">3</td>
+<td align="left">5</td>
+<td align="left">16</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">5</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">6</td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"> </th>
+<th align="left">2018-09-02</th>
+<th align="left">2018-09-03</th>
+<th align="left">2018-09-04</th>
+<th align="left">2018-09-05</th>
+<th align="left">2018-09-07</th>
+<th align="left">2018-09-08</th>
+<th align="left">2018-09-09</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Brown long-eared</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Common pip</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">70</td>
+<td align="left">2</td>
+<td align="left">8</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Leisler’s</strong></td>
+<td align="left">5</td>
+<td align="left">8</td>
+<td align="left">9</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Myotis spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Nathusius’</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Pip spp.</strong></td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">2</td>
+<td align="left">1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Soprano pip</strong></td>
+<td align="left">0</td>
+<td align="left">1</td>
+<td align="left">10</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="left">2</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Inf (continued below)</caption>
+<colgroup>
+<col width="17%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Spp</th>
+<th align="center">2018-07-09</th>
+<th align="center">2018-07-10</th>
+<th align="center">2018-07-11</th>
+<th align="center">2018-07-12</th>
+<th align="center">2018-07-13</th>
+<th align="center">2018-07-14</th>
+<th align="center">2018-07-15</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Brown long-eared</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">Common pip</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">Leisler’s</td>
+<td align="center">12</td>
+<td align="center">10</td>
+<td align="center">1</td>
+<td align="center">43</td>
+<td align="center">17</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">Myotis spp.</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">Nathusius’</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">Pip spp.</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">Soprano pip</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">2018-07-16</th>
+<th align="center">2018-07-17</th>
+<th align="center">2018-07-18</th>
+<th align="center">2018-07-22</th>
+<th align="center">2018-07-23</th>
+<th align="center">2018-07-24</th>
+<th align="center">2018-07-25</th>
+<th align="center">2018-07-26</th>
+<th align="center">2018-07-29</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">17</td>
+<td align="center">8</td>
+<td align="center">3</td>
+<td align="center">74</td>
+<td align="center">5</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">4</td>
+<td align="center">172</td>
+<td align="center">36</td>
+<td align="center">5</td>
+<td align="center">132</td>
+<td align="center">31</td>
+<td align="center">1</td>
+<td align="center">11</td>
+<td align="center">35</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">18</td>
+<td align="center">7</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">2018-07-30</th>
+<th align="center">2018-08-01</th>
+<th align="center">2018-08-02</th>
+<th align="center">2018-08-03</th>
+<th align="center">2018-08-04</th>
+<th align="center">2018-08-05</th>
+<th align="center">2018-08-06</th>
+<th align="center">2018-08-07</th>
+<th align="center">2018-08-08</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">80</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">36</td>
+<td align="center">19</td>
+<td align="center">25</td>
+<td align="center">9</td>
+<td align="center">157</td>
+<td align="center">6</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">4</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">55</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">2018-08-09</th>
+<th align="center">2018-08-10</th>
+<th align="center">2018-08-11</th>
+<th align="center">2018-08-12</th>
+<th align="center">2018-08-13</th>
+<th align="center">2018-08-15</th>
+<th align="center">2018-08-16</th>
+<th align="center">2018-08-17</th>
+<th align="center">2018-08-19</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">34</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">183</td>
+</tr>
+<tr class="odd">
+<td align="center">5</td>
+<td align="center">48</td>
+<td align="center">1</td>
+<td align="center">40</td>
+<td align="center">10</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">228</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">42</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">2018-08-20</th>
+<th align="center">2018-08-22</th>
+<th align="center">2018-08-24</th>
+<th align="center">2018-08-25</th>
+<th align="center">2018-08-27</th>
+<th align="center">2018-08-29</th>
+<th align="center">2018-08-30</th>
+<th align="center">2018-09-01</th>
+<th align="center">2018-09-02</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">21</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">7</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">4</td>
+<td align="center">14</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">74</td>
+<td align="center">5</td>
+<td align="center">2</td>
+<td align="center">57</td>
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">5</td>
+<td align="center">16</td>
+<td align="center">5</td>
+</tr>
+<tr class="even">
+<td align="center">7</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">13</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">2018-09-03</th>
+<th align="center">2018-09-04</th>
+<th align="center">2018-09-05</th>
+<th align="center">2018-09-07</th>
+<th align="center">2018-09-08</th>
+<th align="center">2018-09-09</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">70</td>
+<td align="center">2</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">8</td>
+<td align="center">9</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">1</td>
+<td align="center">10</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+</div>
+<div id="total-bat-passes-by-night-1" class="section level1">
+<h1>Total Bat Passes by Night</h1>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-09</th>
+<th align="center">2018-07-10</th>
+<th align="center">2018-07-11</th>
+<th align="center">2018-07-12</th>
+<th align="center">2018-07-13</th>
+<th align="center">2018-07-14</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">8</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">17</td>
+<td align="center">5</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">14</td>
+<td align="center">5</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">4</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-15</th>
+<th align="center">2018-07-16</th>
+<th align="center">2018-07-17</th>
+<th align="center">2018-07-18</th>
+<th align="center">2018-07-22</th>
+<th align="center">2018-07-23</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">31</td>
+<td align="center">10</td>
+<td align="center">0</td>
+<td align="center">24</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">23</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">25</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">22</td>
+<td align="center">5</td>
+<td align="center">0</td>
+<td align="center">47</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">47</td>
+<td align="center">14</td>
+<td align="center">5</td>
+<td align="center">23</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">49</td>
+<td align="center">5</td>
+<td align="center">0</td>
+<td align="center">13</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">16</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">27</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">5</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">7</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">1</td>
+<td align="center">19</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">16</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-24</th>
+<th align="center">2018-07-25</th>
+<th align="center">2018-07-26</th>
+<th align="center">2018-07-29</th>
+<th align="center">2018-07-30</th>
+<th align="center">2018-08-01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">10</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">27</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">7</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">5</td>
+<td align="center">2</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-02</th>
+<th align="center">2018-08-03</th>
+<th align="center">2018-08-04</th>
+<th align="center">2018-08-05</th>
+<th align="center">2018-08-06</th>
+<th align="center">2018-08-07</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">15</td>
+<td align="center">4</td>
+<td align="center">7</td>
+<td align="center">3</td>
+<td align="center">42</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">4</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">17</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">7</td>
+<td align="center">4</td>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">28</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">9</td>
+<td align="center">7</td>
+<td align="center">13</td>
+<td align="center">0</td>
+<td align="center">38</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">32</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">4</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">32</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">11</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">16</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">15</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">15</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">11</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">4</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">16</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">9</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-08</th>
+<th align="center">2018-08-09</th>
+<th align="center">2018-08-10</th>
+<th align="center">2018-08-11</th>
+<th align="center">2018-08-12</th>
+<th align="center">2018-08-13</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">2</td>
+<td align="center">4</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">28</td>
+<td align="center">6</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">10</td>
+<td align="center">0</td>
+<td align="center">7</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">11</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">17</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">32</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-15</th>
+<th align="center">2018-08-16</th>
+<th align="center">2018-08-17</th>
+<th align="center">2018-08-19</th>
+<th align="center">2018-08-20</th>
+<th align="center">2018-08-22</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">47</td>
+<td align="center">28</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">57</td>
+<td align="center">25</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">38</td>
+<td align="center">7</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">81</td>
+<td align="center">13</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">19</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">75</td>
+<td align="center">11</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">31</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">36</td>
+<td align="center">6</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">22</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">17</td>
+<td align="center">4</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">11</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-24</th>
+<th align="center">2018-08-25</th>
+<th align="center">2018-08-27</th>
+<th align="center">2018-08-29</th>
+<th align="center">2018-08-30</th>
+<th align="center">2018-09-01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">1</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">5</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">0</td>
+<td align="center">38</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">4</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">2</td>
+<td align="center">5</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">5</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-09-02</th>
+<th align="center">2018-09-03</th>
+<th align="center">2018-09-04</th>
+<th align="center">2018-09-05</th>
+<th align="center">2018-09-07</th>
+<th align="center">2018-09-08</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">2</td>
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">46</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">13</td>
+<td align="center">1</td>
+<td align="center">5</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:40%;">
+<colgroup>
+<col width="23%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-09-09</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Myotis spp. : d8</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp. : d9</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d6</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Nyctalus leisleri : d8</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nyctalus leisleri : d9</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d6</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus nathusii : d8</strong></td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus nathusii : d9</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d6</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pipistrellus : d8</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pipistrellus : d9</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d6</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus pygmaeus : d8</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus pygmaeus : d9</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pipistrellus spp. : d6</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Pipistrellus spp. : d8</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d10</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Plecotus auritus : d7</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Plecotus auritus : d8</strong></td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+<div id="mean-bat-passes-per-hour" class="section level2">
+<h2>Mean Bat Passes per Hour</h2>
+<p><strong>Computed as (total bat passes per night)/(night length in hours).</strong></p>
+<p></p>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-09</th>
+<th align="center">2018-07-10</th>
+<th align="center">2018-07-11</th>
+<th align="center">2018-07-12</th>
+<th align="center">2018-07-13</th>
+<th align="center">2018-07-14</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.3</td>
+<td align="center">0.6</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">1.7</td>
+<td align="center">1.4</td>
+<td align="center">0.1</td>
+<td align="center">6.1</td>
+<td align="center">2.4</td>
+<td align="center">0.3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-15</th>
+<th align="center">2018-07-16</th>
+<th align="center">2018-07-17</th>
+<th align="center">2018-07-18</th>
+<th align="center">2018-07-22</th>
+<th align="center">2018-07-23</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">2.3</td>
+<td align="center">1.1</td>
+<td align="center">0.4</td>
+<td align="center">9.8</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0</td>
+<td align="center">0.6</td>
+<td align="center">23.6</td>
+<td align="center">4.9</td>
+<td align="center">0.7</td>
+<td align="center">17.4</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">2.4</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-07-24</th>
+<th align="center">2018-07-25</th>
+<th align="center">2018-07-26</th>
+<th align="center">2018-07-29</th>
+<th align="center">2018-07-30</th>
+<th align="center">2018-08-01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0.7</td>
+<td align="center">0</td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">4.1</td>
+<td align="center">0.1</td>
+<td align="center">1.4</td>
+<td align="center">4.4</td>
+<td align="center">0.5</td>
+<td align="center">0.4</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0.9</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-02</th>
+<th align="center">2018-08-03</th>
+<th align="center">2018-08-04</th>
+<th align="center">2018-08-05</th>
+<th align="center">2018-08-06</th>
+<th align="center">2018-08-07</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+<td align="center">0.6</td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+<td align="center">9.5</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">4.4</td>
+<td align="center">2.3</td>
+<td align="center">3</td>
+<td align="center">1.1</td>
+<td align="center">18.7</td>
+<td align="center">0.7</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.2</td>
+<td align="center">0.1</td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.7</td>
+<td align="center">0.1</td>
+<td align="center">0.5</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">1</td>
+<td align="center">0.2</td>
+<td align="center">0.4</td>
+<td align="center">0.2</td>
+<td align="center">6.5</td>
+<td align="center">0.1</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-08</th>
+<th align="center">2018-08-09</th>
+<th align="center">2018-08-10</th>
+<th align="center">2018-08-11</th>
+<th align="center">2018-08-12</th>
+<th align="center">2018-08-13</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">3.9</td>
+<td align="center">0</td>
+<td align="center">0.5</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0.2</td>
+<td align="center">0.6</td>
+<td align="center">5.5</td>
+<td align="center">0.1</td>
+<td align="center">4.5</td>
+<td align="center">1.1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.3</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.2</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.3</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.3</td>
+<td align="center">0</td>
+<td align="center">0.7</td>
+<td align="center">0.5</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-15</th>
+<th align="center">2018-08-16</th>
+<th align="center">2018-08-17</th>
+<th align="center">2018-08-19</th>
+<th align="center">2018-08-20</th>
+<th align="center">2018-08-22</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">19.7</td>
+<td align="center">2.2</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+<td align="center">24.5</td>
+<td align="center">7.9</td>
+<td align="center">0.5</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.7</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.3</td>
+<td align="center">0.2</td>
+<td align="center">0.1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">4.5</td>
+<td align="center">1.4</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-08-24</th>
+<th align="center">2018-08-25</th>
+<th align="center">2018-08-27</th>
+<th align="center">2018-08-29</th>
+<th align="center">2018-08-30</th>
+<th align="center">2018-09-01</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+<td align="center">0.7</td>
+<td align="center">0</td>
+<td align="center">0.5</td>
+<td align="center">0.4</td>
+<td align="center">1.4</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0.2</td>
+<td align="center">5.9</td>
+<td align="center">0.4</td>
+<td align="center">0.3</td>
+<td align="center">0.5</td>
+<td align="center">1.6</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0.5</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+<td align="center">0.6</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;">
+<caption>Table continues below</caption>
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-09-02</th>
+<th align="center">2018-09-03</th>
+<th align="center">2018-09-04</th>
+<th align="center">2018-09-05</th>
+<th align="center">2018-09-07</th>
+<th align="center">2018-09-08</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">6.7</td>
+<td align="center">0.2</td>
+<td align="center">0.8</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0.5</td>
+<td align="center">0.8</td>
+<td align="center">0.9</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.2</td>
+<td align="center">0.1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0</td>
+<td align="center">0.1</td>
+<td align="center">1</td>
+<td align="center">0.1</td>
+<td align="center">0.2</td>
+<td align="center">0.2</td>
+</tr>
+</tbody>
+</table>
+<table style="width:40%;">
+<colgroup>
+<col width="23%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">2018-09-09</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">0.2</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="bat-passes-per-month" class="section level1">
+<h1>Bat Passes per Month</h1>
+<div id="all-detectors-2" class="section level2">
+<h2>All detectors</h2>
+<p><strong>The total number of bat passes of each species in each month.</strong> <em>Note to me - is this useful? Needs dividing by number of survey nights I think?</em></p>
+<p></p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Species</th>
+<th align="center">Jul</th>
+<th align="center">Aug</th>
+<th align="center">Sep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Brown long-eared</td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">Common pip</td>
+<td align="center">119</td>
+<td align="center">350</td>
+<td align="center">94</td>
+</tr>
+<tr class="odd">
+<td align="center">Leisler’s</td>
+<td align="center">516</td>
+<td align="center">741</td>
+<td align="center">39</td>
+</tr>
+<tr class="even">
+<td align="center">Myotis spp.</td>
+<td align="center">2</td>
+<td align="center">20</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center">Nathusius’</td>
+<td align="center">2</td>
+<td align="center">34</td>
+<td align="center">8</td>
+</tr>
+<tr class="even">
+<td align="center">Pip spp.</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center">Soprano pip</td>
+<td align="center">33</td>
+<td align="center">144</td>
+<td align="center">22</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="bat-passes-per-month-1" class="section level1">
+<h1>Bat Passes per Month</h1>
+<div id="per-detector---table" class="section level2">
+<h2>Per Detector - Table</h2>
+<p><strong>The total number of bat passes of each species in each month at each detector.</strong> <em>Note to me - is this useful? Needs dividing by number of survey nights I think?</em></p>
+<p></p>
+<table style="width:58%;">
+<colgroup>
+<col width="18%" />
+<col width="15%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Species</th>
+<th align="center">Detector ID</th>
+<th align="center">Jul</th>
+<th align="center">Aug</th>
+<th align="center">Sep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Brown long-eared</td>
+<td align="center">d10</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="left">Brown long-eared</td>
+<td align="center">d7</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="left">Brown long-eared</td>
+<td align="center">d8</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="left">Common pip</td>
+<td align="center">d10</td>
+<td align="center">33</td>
+<td align="center">57</td>
+<td align="center">10</td>
+</tr>
+<tr class="odd">
+<td align="left">Common pip</td>
+<td align="center">d6</td>
+<td align="center">37</td>
+<td align="center">104</td>
+<td align="center">54</td>
+</tr>
+<tr class="even">
+<td align="left">Common pip</td>
+<td align="center">d7</td>
+<td align="center">6</td>
+<td align="center">43</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="left">Common pip</td>
+<td align="center">d8</td>
+<td align="center">17</td>
+<td align="center">103</td>
+<td align="center">24</td>
+</tr>
+<tr class="even">
+<td align="left">Common pip</td>
+<td align="center">d9</td>
+<td align="center">26</td>
+<td align="center">43</td>
+<td align="center">6</td>
+</tr>
+<tr class="odd">
+<td align="left">Leisler’s</td>
+<td align="center">d10</td>
+<td align="center">141</td>
+<td align="center">209</td>
+<td align="center">11</td>
+</tr>
+<tr class="even">
+<td align="left">Leisler’s</td>
+<td align="center">d6</td>
+<td align="center">58</td>
+<td align="center">134</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Leisler’s</td>
+<td align="center">d7</td>
+<td align="center">84</td>
+<td align="center">107</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="left">Leisler’s</td>
+<td align="center">d8</td>
+<td align="center">132</td>
+<td align="center">227</td>
+<td align="center">21</td>
+</tr>
+<tr class="odd">
+<td align="left">Leisler’s</td>
+<td align="center">d9</td>
+<td align="center">101</td>
+<td align="center">64</td>
+<td align="center">6</td>
+</tr>
+<tr class="even">
+<td align="left">Myotis spp.</td>
+<td align="center">d10</td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Myotis spp.</td>
+<td align="center">d7</td>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="left">Myotis spp.</td>
+<td align="center">d8</td>
+<td align="center">1</td>
+<td align="center">6</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Myotis spp.</td>
+<td align="center">d9</td>
+<td align="center">0</td>
+<td align="center">7</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="left">Nathusius’</td>
+<td align="center">d10</td>
+<td align="center">1</td>
+<td align="center">6</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Nathusius’</td>
+<td align="center">d6</td>
+<td align="center">1</td>
+<td align="center">8</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="left">Nathusius’</td>
+<td align="center">d7</td>
+<td align="center">0</td>
+<td align="center">8</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="left">Nathusius’</td>
+<td align="center">d8</td>
+<td align="center">0</td>
+<td align="center">7</td>
+<td align="center">4</td>
+</tr>
+<tr class="even">
+<td align="left">Nathusius’</td>
+<td align="center">d9</td>
+<td align="center">0</td>
+<td align="center">5</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Pip spp.</td>
+<td align="center">d10</td>
+<td align="center">0</td>
+<td align="center">2</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="left">Pip spp.</td>
+<td align="center">d6</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Pip spp.</td>
+<td align="center">d8</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="left">Soprano pip</td>
+<td align="center">d10</td>
+<td align="center">4</td>
+<td align="center">27</td>
+<td align="center">11</td>
+</tr>
+<tr class="odd">
+<td align="left">Soprano pip</td>
+<td align="center">d6</td>
+<td align="center">1</td>
+<td align="center">37</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="left">Soprano pip</td>
+<td align="center">d7</td>
+<td align="center">20</td>
+<td align="center">22</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="left">Soprano pip</td>
+<td align="center">d8</td>
+<td align="center">5</td>
+<td align="center">39</td>
+<td align="center">6</td>
+</tr>
+<tr class="even">
+<td align="left">Soprano pip</td>
+<td align="center">d9</td>
+<td align="center">3</td>
+<td align="center">19</td>
+<td align="center">2</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="bat-passes-per-month-2" class="section level1">
+<h1>Bat Passes per Month</h1>
+<div id="per-detector---figures" class="section level2">
+<h2>Per Detector - Figures</h2>
+<p>Figures show boxplots for the number of bat passes by detector each month. The ‘box’ shows the interquartlie range, which represents the middle 50% of the data. The line dividing the box is the median, the mid-point of the data. The ‘whiskers’ of the box represent data outside of the middle 50%, with outliers depicting by the dots.</p>
+<p><img src="Nightly_html_files/figure-html/unnamed-chunk-19-1.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-2.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-3.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-4.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-5.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-6.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-19-7.png" width="960" style="display: block; margin: auto;" /></p>
+<p></p>
+<hr />
+<p></p>
+</div>
+<div id="bat-passes-per-month-by-survey-effort" class="section level2">
+<h2>Bat Passes per Month (by Survey Effort)</h2>
+<p><strong>The average number of bat passes of each species per night throughout each month. This is calculated by taking the total number of passes each month and dividing by the number of survey nights in that month.</strong> <em>Note to self - still writing the code for this</em></p>
+<p></p>
+<table>
+<thead>
+<tr class="header">
+<th align="center"> </th>
+<th align="center">Jul</th>
+<th align="center">Aug</th>
+<th align="center">Sep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Brown long-eared</strong></td>
+<td align="center">2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Common pip</strong></td>
+<td align="center">119</td>
+<td align="center">350</td>
+<td align="center">94</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Leisler’s</strong></td>
+<td align="center">516</td>
+<td align="center">741</td>
+<td align="center">39</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Myotis spp.</strong></td>
+<td align="center">2</td>
+<td align="center">20</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Nathusius’</strong></td>
+<td align="center">2</td>
+<td align="center">34</td>
+<td align="center">8</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Pip spp.</strong></td>
+<td align="center">0</td>
+<td align="center">4</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Soprano pip</strong></td>
+<td align="center">33</td>
+<td align="center">144</td>
+<td align="center">22</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="hourly-bat-passes-after-sunset" class="section level1">
+<h1>Hourly Bat Passes after Sunset</h1>
+<div id="all-detectors-3" class="section level2">
+<h2>All Detectors</h2>
+<p><strong>The average number of bat passes per hour, for each hour after sunset.</strong></p>
+
+<thead>
+<tr>
+<th style="text-align:left;">
+Spp
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+2
+</th>
+<th style="text-align:right;">
+3
+</th>
+<th style="text-align:right;">
+4
+</th>
+<th style="text-align:right;">
+5
+</th>
+<th style="text-align:right;">
+6
+</th>
+<th style="text-align:right;">
+7
+</th>
+<th style="text-align:right;">
+8
+</th>
+<th style="text-align:right;">
+9
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Brown long-eared
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+355
+</td>
+<td style="text-align:right;">
+131
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+667
+</td>
+<td style="text-align:right;">
+288
+</td>
+<td style="text-align:right;">
+84
+</td>
+<td style="text-align:right;">
+130
+</td>
+<td style="text-align:right;">
+43
+</td>
+<td style="text-align:right;">
+32
+</td>
+<td style="text-align:right;">
+18
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Myotis spp.
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Nathusius’
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+18
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Pip spp.
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Soprano pip
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+75
+</td>
+<td style="text-align:right;">
+67
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="nightly-bat-activity" class="section level1">
+<h1>Nightly Bat Activity</h1>
+<div id="per-detector-1" class="section level2">
+<h2>Per Detector</h2>
+<p><strong>Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line.</strong></p>
+<p><img src="Nightly_html_files/figure-html/unnamed-chunk-23-1.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-23-2.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-23-3.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-23-4.png" width="960" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-23-5.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="Nightly_html_files/figure-html/unnamed-chunk-24-1.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-2.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-3.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-4.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-5.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-6.png" width="1152" /><img src="Nightly_html_files/figure-html/unnamed-chunk-24-7.png" width="1152" /></p>
+<hr />
+<p></p>
+</div>
+</div>
+<div id="roost-emergence-time-and-bat-observation" class="section level1">
+<h1>Roost Emergence Time and Bat Observation</h1>
+<p>Based on: <em>Russ, Jon. 2012. British Bat Calls a Guide to Species Identification.</em> <em>Pelagic Publishing.</em></p>
+<p>For more information see <a href="https://rbats-blog.updog.co/2018/05/29/bat-emergence/" class="uri">https://rbats-blog.updog.co/2018/05/29/bat-emergence/</a></p>
+<p></p>
+<hr />
+<p></p>
+<div id="bat-passes-potentially-indicating-close-proximity-to-a-roost-russ-2012---table" class="section level2">
+<h2>Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table</h2>
+<p><strong>Number of bat calls recorded within the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.</strong></p>
+
+<thead>
+<tr>
+<th style="text-align:left;">
+Spp
+</th>
+<th style="text-align:left;">
+Detector ID
+</th>
+<th style="text-align:right;">
+2018-08-19
+</th>
+<th style="text-align:right;">
+2018-09-01
+</th>
+<th style="text-align:right;">
+2018-09-04
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:left;">
+d8
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Common pip
+</td>
+<td style="text-align:left;">
+d10
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Leisler’s
+</td>
+<td style="text-align:left;">
+d10
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<p></p>
+<hr />
+<p></p>
+<div id="bat-passes-potentially-indicating-close-proximity-to-a-roost-russ-2012---figures" class="section level3">
+<h3>Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures</h3>
+<p>Figures show time from 15 minutes before to 90 minutes after sunset. Species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.</p>
+<p></p>
+<p><img src="Nightly_html_files/figure-html/unnamed-chunk-26-1.png" width="2112" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-26-2.png" width="2112" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-26-3.png" width="2112" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-26-4.png" width="2112" style="display: block; margin: auto;" /><img src="Nightly_html_files/figure-html/unnamed-chunk-26-5.png" width="2112" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

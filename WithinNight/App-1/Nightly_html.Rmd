@@ -2,8 +2,9 @@
 title: "Ecobat: Nightly Bat Activity Analysis"
 author: 'Authour: `r params$Author`'
 date: '`r strftime(Sys.time(), format = "%d/%m/%Y")`'
-output: word_document
-always_allow_html: yes
+output: 
+  html_document: 
+    self_contained: no
 params:
   n: NA
   Author: NA
@@ -26,8 +27,7 @@ library(png)
 library(grid)
 library(janitor) # used to add totals rows to bottoms of tables
 library(RColorBrewer) # used for colourblind friendly colour scales on figures
-library(flextable)
-library(officer)
+library(kableExtra)
 
 ```
 
@@ -45,7 +45,7 @@ B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat
 ```
 
 
-```{r, echo=FALSE, fig.cap="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats.", out.width = "8\\linewidth"}
+```{r, echo=FALSE, fig.cap="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats.", out.width="100"}
 knitr::include_graphics("TMS_logo.png")
 ```
 
@@ -314,6 +314,8 @@ mutate(Month = lubridate::month((unique(All_data$Night)), label = T)) %>%
 #Summary
 Bat surveys were conducted on `r Surv.days.N` nights between `r min(All_data$Night)` and `r max(All_data$Night)`, using `r (length(Dets))` static bat detectors. Throughout this period `r (length(Species_list))` species were recorded.
 
+\newline 
+
 # Sunrise and Sunset Times  
 **The times of sunset and sunrise the following morning for surveys beginning on the date shown.**
 
@@ -438,133 +440,183 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
   scale_fill_brewer(palette = "RdBu") +
   guides(fill=guide_legend(title="Species")) +
   theme_bw() +
-  theme (axis.title.y = element_text(colour="black", size=18,
+  theme (axis.title.y = element_text(colour="black", size=16,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
+  theme (axis.title.x = element_text(colour="black", size=16,
                                      face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(size=16, hjust=1, vjust=0.5,
+  theme(axis.text.x = element_text(size=14, hjust=1, vjust=0.5,
                                    colour = "black", angle = 90)) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  theme(legend.text=element_text(size=16)) +
-  theme(legend.title=element_text(size=18))
+  theme(axis.text.y = element_text(size = 14, colour = "black")) +
+  theme(legend.text=element_text(size=14)) +
+  theme(legend.title=element_text(size=16))
 
 ```
 
 
+
+\newline  \newline
+
+***
+
+\newline  \newline
+
+# Total Bat Passes by Night 
+## All Detectors  
+
+\newline  \newline
 ```{r}
+Table <- All_data %>%
+  group_by(Spp, Night) %>% 
+  count() %>% 
+  spread(Night, n)
 
-# \newline  \newline
-# 
-# ***
-# 
-# \newline  \newline
-# 
-# # Total Bat Passes by Night 
-# ## All Detectors  
-# 
-# \newline  \newline
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
 
-# Table <- All_data %>%
-#   group_by(Spp, Night) %>% 
-#   count() %>% 
-#   spread(Night, n)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
-# 
-# # code for having species as the rownames on the left
-# Table2 <- Table %>%
-#   remove_rownames %>%
-#   column_to_rownames(var="Spp") 
-# 
-# # list <- c(unique(Table$Species))
-# # Table3 <- as.data.frame(t(Table[,-1]))
-# # colnames(Table3) <- list
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
-# panderOptions('table.split.table', 120)
-# 
-# pander(Table2, style = "multiline", justify = "left")
-# 
+kable(Table) %>%
+  kable_styling() %>%
+   scroll_box(width= "100%")
+
+
+# code for having species as the rownames on the left
+Table2 <- Table %>%
+  remove_rownames %>%
+  column_to_rownames(var="Spp") 
+
+# list <- c(unique(Table$Species))
+# Table3 <- as.data.frame(t(Table[,-1]))
+# colnames(Table3) <- list
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+panderOptions('table.split.table', 120)
+
+pander(Table2, style = "multiline", justify = "left")
+
+pander(Table, Inf)
 
 ```
 
+
+`r if(length(Dets)>1) {'\n\n***\n\n# Total Bat Passes by Night\n\n' }`
+
 ```{r}
-# 
-# `r if(length(Dets)>1) {'\n\n***\n\n# Total Bat Passes by Night\n\n' }`
-# 
-# if(length(Dets) >1) {
-# 
-# Table <- All_data %>%
-#   group_by(SppDets, Night) %>% 
-#   count() %>% 
-#   spread(Night, n)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
-# 
-# # code for having species as the rownames on the left
-# Table2 <- Table %>%
-#   remove_rownames %>%
-#   column_to_rownames(var="SppDets")
-# 
-# # if wanting species along the top:
-# # list <- c(unique(Table$Species))
-# # Table3 <- as.data.frame(t(Table[,-1]))
-# # colnames(Table3) <- list
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
-# panderOptions('table.split.table', 100)
-# panderOptions('table.split.cells', 2)
-# 
-# pander(Table2, style = "multiline")
-# 
-# }
+
+if(length(Dets) >1) {
+
+Table <- All_data %>%
+  group_by(SppDets, Night) %>% 
+  count() %>% 
+  spread(Night, n)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+
+# code for having species as the rownames on the left
+Table2 <- Table %>%
+  remove_rownames %>%
+  column_to_rownames(var="SppDets")
+
+# if wanting species along the top:
+# list <- c(unique(Table$Species))
+# Table3 <- as.data.frame(t(Table[,-1]))
+# colnames(Table3) <- list
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+panderOptions('table.split.table', 100)
+panderOptions('table.split.cells', 2)
+
+pander(Table2, style = "multiline")
+
+}
 
 ```
 
-```{r}
 
-# ## Mean Bat Passes per Hour
-# 
-# **Computed as (total bat passes per night)/(night length in hours).**
-# 
-# \newline  \newline
-# 
-# 
-# Table <- All_data %>%
-#   group_by(Spp, Night, night_length_hr) %>% 
-#   # count number of passes per night by species - makes coloumn "n""
-#   count() %>% 
-#   # calculate average bat passes per hour for each Night and species
-#   summarise(Act_per_hr = n / night_length_hr) %>%
-#   # Remove Night Length column from the Table
-#   select(-night_length_hr) %>% 
-#   spread(Night, Act_per_hr)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
+\newline  \newline
+
+***
+
+\newline  \newline
+
+## Mean Bat Passes per Hour
+
+**Computed as (total bat passes per night)/(night length in hours).**
+
+\newline  \newline
+```{r}
+Table <- All_data %>%
+  group_by(Spp, Night, night_length_hr) %>% 
+  # count number of passes per night by species - makes coloumn "n""
+  count() %>% 
+  # calculate average bat passes per hour for each Night and species
+  summarise(Act_per_hr = n / night_length_hr) %>%
+  # Remove Night Length column from the Table
+  select(-night_length_hr) %>% 
+  spread(Night, Act_per_hr)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+Table2 <- Table %>% 
+  remove_rownames %>% 
+  column_to_rownames(var="Spp")
+
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+panderOptions('table.split.table', 100)
+panderOptions('round', 1)
+
+pander(Table2, style = "multiline")
+
+```
+
+\newline  \newline
+
+***
+
+\newline  \newline
+
+# Bat Passes per Month 
+## All detectors
+
+**The total number of bat passes of each species in each month.**
+*Note to me - is this useful? Needs dividing by number of survey nights I think?*
+
+\newline  \newline
+```{r}
+Table <- All_data %>%
+  group_by(Spp, Month) %>% 
+  count() %>% 
+  spread(Month, n) %>%
+  rename("Species" = Spp)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+pander(Table, style = "rmarkdown")
+
+
+
+
+# IF NEED TO SPLIT THE TABLE UP BCOZ TOO BIG
+
 # Table2 <- Table %>% 
 #   remove_rownames %>% 
 #   column_to_rownames(var="Spp")
-# 
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
 # panderOptions('table.split.table', 100)
-# panderOptions('round', 1)
-# 
-# pander(Table2, style = "multiline")
+# pander(Table2, style = "rmarkdown")
+
 
 ```
 
@@ -576,9 +628,10 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
 \newline  \newline
 
 # Bat Passes per Month 
-## Per Detector
+## Per Detector - Table
 
 **The total number of bat passes of each species in each month at each detector.**
+*Note to me - is this useful? Needs dividing by number of survey nights I think?*
 
 \newline  \newline
 ```{r}
@@ -605,75 +658,6 @@ pander(Table, style = "multiline", justify = c("left", "centre", "centre", "cent
 
 ```
 
-
-\newline  \newline
-
-***
-
-\newline  \newline
-
-## Bat Passes per Month 
-# Survey Effort
-**The average number of bat passes of each species per night throughout each month. Calculated with (Number of passes each month) / (Number of survey nights each month). Values given to 3 significant figures.**
-
-\newline  \newline
-```{r}
-Table <- All_data %>%
-  group_by(Spp, Month, Detector.ID) %>% 
-  count()
-
-Table2 <- All_data %>%
-  group_by(Month) %>%
-  summarise(count = n_distinct(Night))
-
-Table3 <- left_join(Table, Table2, by = "Month") %>%
-  mutate("Effort" = signif((n/count), digits = 2)) %>%
-  select(Spp, Detector.ID, Month, Effort) %>%
-  spread(Month, Effort) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
-
-# Make all NA's = 0
-Table3[is.na(Table3)] <- 0
-
-
-results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-
-knitr::kable(Table3)
-
-```
-
-\newline  \newline
-
-***
-
-\newline  \newline
-
-## Median Bat Passes per Month 
-# Per Detector
-**The median number of bat passes of each species throughout each month.**
-
-\newline  \newline
-
-```{r}
-Table <- All_data %>%
-  group_by(Spp, Detector.ID, Month, Night) %>% 
-  count()
-
-Table2 <- Table %>%
-  group_by(Spp, Month, Detector.ID) %>%
-  summarise(Median = median(n)) %>%
-  spread(Month, Median) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
-
-
-
-results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-
-knitr::kable(Table2)
-
-```
-
-
 \newline  \newline
 
 ***
@@ -691,6 +675,10 @@ Figures show boxplots for the number of bat passes by detector each month. The '
 Night_month <- All_data %>%
   group_by(Spp, Night, Month, Detector.ID) %>% 
   count() 
+
+test <- Night_month %>%
+  group_by(Spp, Month, Detector.ID) %>%
+  summarise(mean(n))
 
 for (i in unique(All_data$Spp)) {
   
@@ -725,7 +713,48 @@ print(Night_month %>%
 ```
 
 
+\newline  \newline
 
+***
+
+\newline  \newline
+
+## Bat Passes per Month (by Survey Effort)
+
+**The average number of bat passes of each species per night throughout each month. This is calculated by taking the total number of passes each month and dividing by the number of survey nights in that month.**
+*Note to self - still writing the code for this*
+
+
+\newline  \newline
+```{r}
+Table <- All_data %>%
+  group_by(Spp, Month) %>% 
+  count() %>% 
+  spread(Month, n)
+
+Surv.days <- as.data.frame(unique(All_data$Night))
+Surv.days.t <- Surv.days %>%
+mutate(Month = lubridate::month((unique(All_data$Night)), label = T)) %>%
+  count(Month)
+
+
+
+  
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+Table2 <- Table %>% 
+  remove_rownames %>% 
+  column_to_rownames(var="Spp")
+
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+panderOptions('table.split.table', 100)
+
+pander(Table2, style = "rmarkdown")
+
+```
 
 
 `r if("Bat_time" %in% colnames(All_data) == TRUE) {'\n\n***\n\n## Time (Seconds) Bat Present\n **Calculated from...**\n\n'}`
@@ -759,22 +788,20 @@ knitr::kable(Table, digits = 1)
 # Hourly Bat Passes after Sunset 
 ## All Detectors
 
-**The total number of bat passes occuring during each hour after sunset.**
+**The average number of bat passes per hour, for each hour after sunset.**
 
 \newline  \newline
 ```{r}
-
 Table <- All_data %>%
-  group_by(Spp, Detector.ID, post_set_hr_int) %>% 
+  group_by(Spp, post_set_hr_int) %>% 
   count() %>% 
-  spread(post_set_hr_int, n) %>%
-  replace(is.na(.), 0) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
+  spread(post_set_hr_int, n)
 
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
 
 # simple table
 knitr::kable(Table)
-
 
 ```
 
@@ -832,7 +859,7 @@ print(All_data %>%
 ```
 
 
-```{r, fig.width=10, fig.height=8}
+```{r, fig.width=12, fig.height=10}
 
 
 for (i in unique(All_data$Spp)) {
@@ -885,6 +912,10 @@ For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 \newline  \newline
 
 
+***
+
+\newline  \newline
+
 ## Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table
 
 **Number of bat calls recorded within the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
@@ -896,9 +927,8 @@ Table <- All_data %>%
   group_by(Night, Spp, Detector.ID) %>% 
   count() %>% 
   spread(Night, n) %>%
-  arrange(Spp, Detector.ID) %>%
-  rename("Detector ID" = Detector.ID) %>%
-  rename("Species" = Spp)
+  arrange(Spp, desc(Detector.ID)) %>%
+  rename("Detector ID" = Detector.ID)
 
 # Make all NA's = 0
 Table[is.na(Table)] <- 0
