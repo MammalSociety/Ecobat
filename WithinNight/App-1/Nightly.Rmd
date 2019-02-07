@@ -33,7 +33,7 @@ library(officer)
 
 ```{r}
 # # for testing purposes - load in test data
-B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/RiggedHill.csv")
+B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/GlenApp.csv")
 #glimpse(B_data)
 
 ```
@@ -164,19 +164,19 @@ setdata <- getSunlightTimes(date = nightlist,
 risedata <- setdata
 
 # Select  sunset date and time
-setdata <- setdata %>% 
+setdata2 <- setdata %>% 
   select(date, sunset) %>% 
   mutate(date = lubridate::as_date(date))
 
 # Select  sunrise date and time
-risedata <- risedata %>% 
+risedata2 <- risedata %>% 
   select(date, sunrise) %>% 
   mutate(date = lubridate::as_date(date)) %>%
   mutate(date = date - lubridate::days(1))
 
 
 # Combine sunset and risedata by 
-sun_data <- dplyr::full_join(setdata, risedata, by="date")
+sun_data <- dplyr::full_join(setdata2, risedata2, by="date")
 
 # Rename date as Night
 colnames(sun_data) <- c("Night", "sunset", "sunrise")
@@ -312,7 +312,7 @@ mutate(Month = lubridate::month((unique(All_data$Night)), label = T)) %>%
 ```
 
 #Summary
-Bat surveys were conducted on `r Surv.days.N` nights between `r min(All_data$Night)` and `r max(All_data$Night)`, using `r (length(Dets))` static bat detectors. Throughout this period `r (length(Species_list))` species were recorded.
+Bat surveys were conducted on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(Species_list))`** species were recorded.
 
 # Sunrise and Sunset Times  
 **The times of sunset and sunrise the following morning for surveys beginning on the date shown.**
@@ -438,20 +438,20 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
   scale_fill_brewer(palette = "RdBu") +
   guides(fill=guide_legend(title="Species")) +
   theme_bw() +
-  theme (axis.title.y = element_text(colour="black", size=18,
+  theme (axis.title.y = element_text(colour="black", size=20,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
+  theme (axis.title.x = element_text(colour="black", size=20,
                                      face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(size=16, hjust=1, vjust=0.5,
+  theme(axis.text.x = element_text(size=18, hjust=1, vjust=0.5,
                                    colour = "black", angle = 90)) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  theme(legend.text=element_text(size=16)) +
-  theme(legend.title=element_text(size=18))
+  theme(axis.text.y = element_text(size = 18, colour = "black")) +
+  theme(legend.text=element_text(size=18)) +
+  theme(legend.title=element_text(size=20))
 
 ```
 
@@ -614,10 +614,39 @@ pander(Table, style = "multiline", justify = c("left", "centre", "centre", "cent
 
 ## Bat Passes per Month 
 # Survey Effort
+**The number of survey nights per month.**
+
+```{r}
+
+# print(paste("The number of survey nights per month is as folows:"))
+# 
+# for (i in (unique(All_data$Month))) { 
+#     Survs <- All_data %>%
+#     filter(Month == i) %>%
+#     summarise(Surveys = n_distinct(Night)) %>%
+#     mutate(Month = i)
+#     print(paste(Survs$Month, "-", Survs$Surveys, "nights"))
+#   }
+
+
+Table <- All_data %>%
+  group_by(Month) %>%
+  summarise(count = n_distinct(Night)) %>%
+  rename("No of Survey Nights" = count)
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+knitr::kable(Table, align = "lc")
+
+```
+
+\newline
+
 **The average number of bat passes of each species per night throughout each month. Calculated with (Number of passes each month) / (Number of survey nights each month). Values given to 3 significant figures.**
 
-\newline  \newline
-```{r}
+\newline
+``` {r}
+
 Table <- All_data %>%
   group_by(Spp, Month, Detector.ID) %>% 
   count()
@@ -628,13 +657,10 @@ Table2 <- All_data %>%
 
 Table3 <- left_join(Table, Table2, by = "Month") %>%
   mutate("Effort" = signif((n/count), digits = 2)) %>%
-  select(Spp, Detector.ID, Month, Effort) %>%
+  select(Month, Spp, Detector.ID, Effort) %>%
   spread(Month, Effort) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
-
-# Make all NA's = 0
-Table3[is.na(Table3)] <- 0
-
+  rename("Species" = Spp, "Detector ID" = Detector.ID) %>%
+  replace(is.na(.), 0)
 
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
 
@@ -650,7 +676,7 @@ knitr::kable(Table3)
 
 ## Median Bat Passes per Month 
 # Per Detector
-**The median number of bat passes of each species throughout each month.**
+**The median number of bat passes of each species throughout each month. If NA, then no bat passes.**
 
 \newline  \newline
 
@@ -694,33 +720,45 @@ Night_month <- All_data %>%
 
 for (i in unique(All_data$Spp)) {
   
-print(Night_month %>%
-  filter(Spp == i) %>%
-  ggplot(aes(Month, n)) +
+  new <- Night_month %>%
+  filter(Spp == i)
+  
+  print(new %>%
+  ggplot(aes(Month, n, fill=Detector.ID)) +
   geom_boxplot(aes(fill=Detector.ID)) +
   scale_fill_brewer(palette = "RdBu") +
   ylab("Bat passes per night\n") +
   xlab("\nMonth") +
+  {if (max(new$n) <= 5)ylim(0,5)} +  
+  {if (max(new$n) > 5 & max(new$n) <=10)ylim(0,10)} +
+  {if (max(new$n) > 10 & max(new$n) <=20)ylim(0,20)} +
+  {if (max(new$n) > 20 & max(new$n) <=50)ylim(0,50)} +  
+  {if (max(new$n) > 50 & max(new$n) <=100)ylim(0,100)} +
+  {if (max(new$n) > 100 & max(new$n) <=200)ylim(0,200)} +
+  {if (max(new$n) > 200 & max(new$n) <=300)ylim(0,300)} +
+  {if (max(new$n) > 300 & max(new$n) <=500)ylim(0,500)} +
+  {if (max(new$n) > 500 & max(new$n) <=1000)ylim(0,1000)} +
+  geom_text(aes(y=(max(n)+1), x=Month, label=Detector.ID, group=Detector.ID), position=position_dodge(0.8), size=4) +
   theme_bw() +
-  theme (axis.title.y = element_text(colour="black", size=14,
+  theme (axis.title.y = element_text(colour="black", size=18,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=14,
+  theme (axis.title.x = element_text(colour="black", size=18,
                                      face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(size=12, hjust=0.5, vjust=1,
+  theme(axis.text.x = element_text(size=16, hjust=0.5, vjust=1,
                                    colour = "black")) +
-  theme(axis.text.y = element_text(size = 12, colour = "black")) +
+  theme(axis.text.y = element_text(size = 16, colour = "black")) +
   ggtitle(i) +
-  theme(plot.title = element_text(face = "bold.italic", size = 18)) +
-  guides(fill=guide_legend(title="Detector ID")))
+  theme(plot.title = element_text(face = "bold.italic", size = 22)) +
+  guides(fill=guide_legend(title="Detector ID")) +
+  theme(legend.text=element_text(size=18)) +
+  theme(legend.title=element_text(size=20)))
         
 }
-
-
 
 ```
 
@@ -785,6 +823,63 @@ knitr::kable(Table)
 
 \newline  \newline
 
+# Hourly Bat Passes after Sunset 
+## All Detectors
+
+**Cumulative number of bat passes throughout the night.**
+
+\newline  \newline
+```{r, fig.width=12, fig.height=8}
+
+Table <- All_data %>%
+  group_by(Spp, Detector.ID, post_set_hr_int) %>% 
+  count() %>% 
+  spread(post_set_hr_int, n) %>%
+  replace(is.na(.), 0)
+
+Table2 <- melt(Table)
+
+Table3 <- Table2 %>%
+  rename(ss_hr = variable, Passes = value) %>%
+  arrange(Spp, Detector.ID, ss_hr) %>%
+  group_by(Spp, Detector.ID) %>%
+  mutate(cs = cumsum(Passes))
+
+
+for (i in (unique(All_data$Spp))) {
+  print(Table3 %>%
+        filter(Spp == i) %>%
+        ggplot(aes(x = ss_hr, y = cs, group =1)) +
+        geom_point() +
+        geom_line() +
+        xlab("\nHours after Sunset") +
+        ylab("Total number of passes\n") +
+        scale_color_brewer(palette = "RdBu") +
+        theme_bw() +
+        theme (axis.title.y = element_text(colour="black", size=22,
+                                     face="bold")) +
+        theme (axis.title.x = element_text(colour="black", size=22,
+                                     face="bold")) +
+        theme(strip.text.x = element_text(size=22, face="bold")) +
+        theme(axis.text.x = element_text(size=20, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+        theme(axis.text.y = element_text(size = 20, colour = "black")) +
+        facet_wrap(~Detector.ID) +
+        ggtitle(i) +
+        theme(plot.title = element_text(face = "bold.italic", size = 22))
+)
+}
+
+
+
+```
+
+\newline  \newline
+
+***
+
+\newline  \newline
+
 # Nightly Bat Activity 
 ## Per Detector
 
@@ -795,39 +890,39 @@ knitr::kable(Table)
 # plot out each pass 
 
 #for(i in seq_along(SpeciesLoc)) {
-  
-npage <- ceiling(length(SpDet)/6)
-  
-for(i in seq_len(npage)) {
-
-print(All_data %>%
-  ggplot(aes(Night, post_set_min)) +
-  geom_point(size=4, alpha = 0.5, position =
-               position_jitter(w = 1, h = 0)) +
-  geom_line(data = sun_data, aes(Night, night_length_min),
-            linetype = "dashed", colour = "red") +
-  xlab("\nMonth") + 
-  ylab("Minutes after sunset\n") +
-  theme_bw() +
-  theme (legend.position = "none") +
-  theme (axis.title.y = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme(strip.text.x = element_text(size=18, face="bold")) +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour="black", linetype="solid"),
-        axis.line=element_line(size=0.5, colour="black",
-                               linetype="solid")) +
-  theme(axis.text.x = element_text(size=16, hjust=0.5, vjust=1,
-                                   colour = "black")) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  facet_wrap_paginate(SppDets~., ncol=2, nrow=3, scales="fixed", page=i)) 
- 
-}
-
-
+#   
+# npage <- ceiling(length(SpDet)/6)
+#   
+# for(i in seq_len(npage)) {
+# 
+# print(All_data %>%
+#   ggplot(aes(Night, post_set_min)) +
+#   geom_point(size=4, alpha = 0.5, position =
+#                position_jitter(w = 1, h = 0)) +
+#   geom_line(data = sun_data, aes(Night, night_length_min),
+#             linetype = "dashed", colour = "red") +
+#   xlab("\nMonth") + 
+#   ylab("Minutes after sunset\n") +
+#   theme_bw() +
+#   theme (legend.position = "none") +
+#   theme (axis.title.y = element_text(colour="black", size=18,
+#                                      face="bold")) +
+#   theme (axis.title.x = element_text(colour="black", size=18,
+#                                      face="bold")) +
+#   theme(strip.text.x = element_text(size=18, face="bold")) +
+#   theme(panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         panel.border = element_rect(colour="black", linetype="solid"),
+#         axis.line=element_line(size=0.5, colour="black",
+#                                linetype="solid")) +
+#   theme(axis.text.x = element_text(size=16, hjust=0.5, vjust=1,
+#                                    colour = "black")) +
+#   theme(axis.text.y = element_text(size = 16, colour = "black")) +
+#   facet_wrap_paginate(SppDets~., ncol=2, nrow=3, scales="fixed", page=i)) 
+#  
+# }
+# 
+# 
 
 ```
 
@@ -915,19 +1010,17 @@ knitr::kable(Table)
 
 ### Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures
 
-Figures show time from 15 minutes before to 90 minutes after sunset. Species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.
+**Figures show time from 15 minutes before to 90 minutes after sunset. Species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
 
 \newline  \newline
 
-```{r fig.width=22, fig.height=17, fig.align="center"}
+```{r fig.width=22, fig.height=15, fig.align="center"}
 
 # create a list of all of the different species
 spp_list <- unique(All_data$Spp)
 
 
 xLab <- "\nTime after sunset (mins)"
-Caption <- "\n15 minutes before and 90 minutes after sunset. \nGrey bars are emergence times adapted from (Russ 2012)"
-
 
 for (i in seq_len(length(unique(All_data$Detector.ID)))) {
   
@@ -935,7 +1028,7 @@ print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
     geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
                  size = 25, colour="grey") +
   geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
-  labs(x = xLab, caption = Caption) +
+  labs(x = xLab) +
   scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
                      limits = c(-15, 90)) +
   geom_hline(yintercept = c(seq_len(length(spp_list)-1) + 0.5),
@@ -944,15 +1037,15 @@ print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
   scale_colour_brewer(palette = "Paired") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 30)) +
-  theme(strip.text.x = element_text(size=30, face="bold")) +
+  theme(plot.caption = element_text(colour = "black", size = 34)) +
+  theme(strip.text.x = element_text(size=34, face="bold")) +
   theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 30,
+  theme(axis.title.x = element_text(colour = "black", size = 34,
                                      face = "bold")) +
-  theme(axis.text.x = element_text(size = 24, hjust=0.5, vjust=1,
+  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
                                    colour = "black",
                                    face = "bold")) +
-  theme(axis.text.y = element_text(size = 24, colour = "black",
+  theme(axis.text.y = element_text(size = 28, colour = "black",
                                    face = "bold.italic")) +
   theme(panel.background = element_rect(fill = "white")) +
   theme(panel.grid.major.x = element_line(colour = "black",
