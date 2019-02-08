@@ -46,7 +46,7 @@ B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat
 ```
 
 
-```{r, echo=FALSE, fig.cap="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats.", out.width = "20%"}
+```{r, echo=FALSE, fig.cap="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats.", out.width = "8\\linewidth"}
 knitr::include_graphics("TMS_logo.png")
 ```
 
@@ -431,9 +431,7 @@ knitr::kable(Table, align = 'lccc')
 
 # Species Composition of Passes at each Detector
 
-\newline
-
-```{r fig.height=8, fig.width=10}
+```{r}
 
 # stacked bar plot for proportion of calls by species for each detector
 
@@ -452,20 +450,20 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
   scale_fill_manual(values = getPalette(colourCount)) +
   guides(fill=guide_legend(title="Species")) +
   theme_bw() +
-  theme (axis.title.y = element_text(colour="black", size=20,
+  theme (axis.title.y = element_text(colour="black", size=10,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=20,
+  theme (axis.title.x = element_text(colour="black", size=10,
                                      face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(size=18, hjust=1, vjust=0.5,
+  theme(axis.text.x = element_text(size=9, hjust=1, vjust=0.5,
                                    colour = "black", angle = 90)) +
-  theme(axis.text.y = element_text(size = 18, colour = "black")) +
-  theme(legend.text=element_text(size=18)) +
-  theme(legend.title=element_text(size=20))
+  theme(axis.text.y = element_text(size = 9, colour = "black")) +
+  theme(legend.text=element_text(size=9)) +
+  theme(legend.title=element_text(size=10))
 
 ```
 
@@ -582,7 +580,6 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
 
 ```
 
-
 ##### Page Break
 
 # Bat Passes per Month 
@@ -590,7 +587,7 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
 
 **The total number of bat passes of each species in each month at each detector.**
 
-\newline 
+\newline  
 ```{r}
 Table <- All_data %>%
   group_by(Spp, Month, Detector.ID) %>% 
@@ -705,13 +702,12 @@ knitr::kable(Table2)
 
 ##### Page Break
 
-
 # Bat Passes per Month 
 ## Per Detector - Figures
 
 Figures show boxplots for the number of bat passes by detector each month. The 'box' shows the interquartile range, which is where the middle 50% of the data lie. The line dividing the box is the median, the mid-point of the data. The 'whiskers' extend from the box and represent the ranges for the bottom 25% and the top 25% of the data values, excluding outliers. An outlier is any extreme value that lies further away from the box than 1.5 times the interquartile range. Outliers are shown as dots. Where very few passes are recorded it is not possible to produce the box, so the data are shown as a line.
 
-```{r, fig.width=10, fig.height=8}
+```{r}
 
 Night_month <- All_data %>%
   group_by(Spp, Night, Month, Detector.ID) %>% 
@@ -738,22 +734,22 @@ for (i in unique(All_data$Spp)) {
   {if (max(new$n) > 300 & max(new$n) <=500)ylim(-1,500)} +
   {if (max(new$n) > 500 & max(new$n) <=1000)ylim(-1,1000)} +
   geom_text(aes(y=(min(n)-1), x=Month, label=Detector.ID, group=Detector.ID),
-            position=position_dodge(0.8), size=4) +
+            position=position_dodge(0.8), size=3) +
   theme_bw() +
-  theme (axis.title.y = element_text(colour="black", size=18,
+  theme (axis.title.y = element_text(colour="black", size=9,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
+  theme (axis.title.x = element_text(colour="black", size=9,
                                      face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(size=16, hjust=0.5, vjust=1,
+  theme(axis.text.x = element_text(size=8, hjust=0.5, vjust=1,
                                    colour = "black")) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
+  theme(axis.text.y = element_text(size = 8, colour = "black")) +
   ggtitle(i) +
-  theme(plot.title = element_text(face = "bold.italic", size = 22)) +
+  theme(plot.title = element_text(face = "bold.italic", size = 11)) +
   theme(legend.position="none"))
   
   # guides(fill=guide_legend(title="Detector ID")) +
@@ -823,7 +819,7 @@ knitr::kable(Table)
 **Cumulative number of bat passes throughout the night.**
 
 \newline  \newline
-```{r, fig.width=12, fig.height=8}
+```{r}
 
 Table <- All_data %>%
   group_by(Spp, Detector.ID, post_set_hr_int) %>% 
@@ -850,16 +846,17 @@ for (i in (unique(All_data$Spp))) {
         ylab("Total number of passes\n") +
         scale_color_brewer(palette = "RdBu") +
         theme_bw() +
-        theme (axis.title.y = element_text(colour="black", size=22,
+        theme (axis.title.y = element_text(colour="black", size=11,
                                      face="bold")) +
-        theme (axis.title.x = element_text(colour="black", size=22,
+        theme (axis.title.x = element_text(colour="black", size=11,
                                      face="bold")) +
-        theme(strip.text.x = element_text(size=22, face="bold")) +
-        theme(axis.text.x = element_text(size=20, colour = "black")) +
-        theme(axis.text.y = element_text(size = 20, colour = "black")) +
+        theme(strip.text.x = element_text(size=11, face="bold")) +
+        theme(axis.text.x = element_text(size=10, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+        theme(axis.text.y = element_text(size = 10, colour = "black")) +
         facet_wrap(~Detector.ID) +
         ggtitle(i) +
-        theme(plot.title = element_text(face = "bold.italic", size = 22))
+        theme(plot.title = element_text(face = "bold.italic", size = 11))
 )
 }
 
@@ -874,7 +871,7 @@ for (i in (unique(All_data$Spp))) {
 
 **Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line.**
 
-```{r fig.width=10, fig.height=12}
+```{r}
 
 # plot out each pass 
 
@@ -916,7 +913,7 @@ for (i in (unique(All_data$Spp))) {
 ```
 
 
-```{r, fig.width=10, fig.height=8}
+```{r}
 
 
 for (i in unique(All_data$Spp)) {
@@ -933,22 +930,22 @@ print(All_data %>%
   #scale_x_date(date_breaks = "1 month", date_labels = "%b %d") +
   theme_bw() +
   theme (legend.position = "none") +
-  theme (axis.title.y = element_text(colour="black", size=18,
+  theme (axis.title.y = element_text(colour="black", size=9,
                                      face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
+  theme (axis.title.x = element_text(colour="black", size=9,
                                      face="bold")) +
-  theme(strip.text.x = element_text(size=18, face="bold")) +
+  theme(strip.text.x = element_text(size=9, face="bold")) +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black",
                                linetype="solid")) +
-  theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+  theme(axis.text.x = element_text(angle=90, size=8, hjust=1, vjust=0.5,
                                    colour = "black")) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
+  theme(axis.text.y = element_text(size = 8, colour = "black")) +
   facet_wrap(Detector.ID~.) +
   ggtitle(i) +
-  theme(plot.title = element_text(face = "bold.italic", size = 18)))
+  theme(plot.title = element_text(face = "bold.italic", size = 9)))
  
 }
 
@@ -996,9 +993,9 @@ knitr::kable(Table)
 
 **Figures show time from 15 minutes before to 90 minutes after sunset. Species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
 
-\newline  \newline
+\newline
 
-```{r fig.width=22, fig.height=15}
+```{r}
 
 # create a list of all of the different species
 spp_list <- unique(All_data$Spp)
@@ -1017,19 +1014,19 @@ print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
                      limits = c(-15, 90)) +
   geom_hline(yintercept = c(seq_len(length(spp_list)-1) + 0.5),
              colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
+  scale_y_discrete(drop=FALSE) +
   scale_colour_brewer(palette = "Paired") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
+  theme(plot.caption = element_text(colour = "black", size = 17)) +
   theme(strip.text.x = element_text(size=34, face="bold")) +
   theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
+  theme(axis.title.x = element_text(colour = "black", size = 17,
                                      face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+  theme(axis.text.x = element_text(size = 14, hjust=0.5, vjust=1,
                                    colour = "black",
                                    face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
+  theme(axis.text.y = element_text(size = 14, colour = "black",
                                    face = "bold.italic")) +
   theme(panel.background = element_rect(fill = "white")) +
   theme(panel.grid.major.x = element_line(colour = "black",
@@ -1060,7 +1057,7 @@ All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format 
 
 ```
 
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break ###Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n*Maternity period defined as 15th June - 30th July*\n\n'}`
+`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break###Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n*Maternity period defined as 15th June - 30th July*\n\n'}`
 
 ```{r}
 
@@ -1090,9 +1087,9 @@ if(nrow(Maternity) > 0) {
 
 
 
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break ###Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n*Maternity period defined as 15th June - 30th July*'}`
+`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'\n\n###Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n*Maternity period defined as 15th June - 30th July*'}`
 
-```{r fig.width=22, fig.height=15}
+```{r}
 
 if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
   
@@ -1109,19 +1106,19 @@ for (i in seq_len(length(unique(All_data$Detector.ID)))) {
                      limits = c(-15, 90)) +
   geom_hline(yintercept = c(seq_len(length(spp_list)-1) + 0.5),
              colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
+  scale_y_discrete(drop=FALSE) +
   scale_colour_brewer(palette = "Paired") +
   theme_bw() +
   theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
-  theme(strip.text.x = element_text(size=34, face="bold")) +
+  theme(plot.caption = element_text(colour = "black", size = 17)) +
+  theme(strip.text.x = element_text(size=17, face="bold")) +
   theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
+  theme(axis.title.x = element_text(colour = "black", size = 17,
                                      face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+  theme(axis.text.x = element_text(size = 14, hjust=0.5, vjust=1,
                                    colour = "black",
                                    face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
+  theme(axis.text.y = element_text(size = 14, colour = "black",
                                    face = "bold.italic")) +
   theme(panel.background = element_rect(fill = "white")) +
   theme(panel.grid.major.x = element_line(colour = "black",
