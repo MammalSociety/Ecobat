@@ -1,6 +1,6 @@
-#load packages - included all the ones required for the Rmd script to run too - not sure if necessary
-library(shiny) # tell R which packages it's going to need to use ggplot2, knitr, pander and plyr are called in the rmd code
-library(rmarkdown) # ggplot2, knitr, pander and plyr are called in the rmd code
+#load packages - not sure if necessary
+library(shiny) 
+library(rmarkdown) 
 library(ggplot2)
 library(knitr)
 library(pander)
@@ -21,7 +21,7 @@ shinyServer(function(input, output) {
     if (is.null(data1)) #if no data has been uploaded, main panel is empty
       return(NULL)
     
-    data2<-read.csv(data1$datapath, header=TRUE)
+    data2 < -read.csv(data1$datapath, header=TRUE)
     data2 #if data has been uploaded, it reads it and then displays in the main panel
   })
   
