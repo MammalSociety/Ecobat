@@ -32,16 +32,20 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 ```
 
 ```{r}
-# # for testing purposes - load in test data
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/MammalSociety/Ecobat/Ecobat/WithinNight/Data/RiggedHill.csv")
-#glimpse(B_data)
+
+# TESTING - load in test data
+
+B_data <- read.csv("../Data/RiggedHill.csv")
 
 ```
 
 ```{r}
+# SHINY
+
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-B_data <- params$n
+#B_data <- params$n
+
 ```
 
 
