@@ -35,7 +35,7 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 
 # TESTING - load in test data
 
-B_data <- read.csv("../Data/RiggedHill.csv")
+#B_data <- read.csv("../Data/RiggedHill.csv")
 
 ```
 
@@ -44,7 +44,7 @@ B_data <- read.csv("../Data/RiggedHill.csv")
 
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-#B_data <- params$n
+B_data <- params$n
 
 ```
 

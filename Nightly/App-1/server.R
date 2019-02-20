@@ -56,61 +56,10 @@ shinyServer(function(input, output) {
       # Set up parameters to pass to Rmd document
       params <- list(n = datab, Author=author)
       
-      word_document <- function(toc = FALSE,
-                                toc_depth = 3,
-                                fig_width = 5,
-                                fig_height = 4,
-                                fig_caption = TRUE,
-                                df_print = "default",
-                                smart = TRUE,
-                                highlight = "default",
-                                reference_docx = "stylesdoc.docx",
-                                keep_md = FALSE,
-                                md_extensions = NULL,
-                                pandoc_args = NULL) {
-        
-        
-        
-        # reference docx
-        args <- c(args, reference_doc_args("docx", reference_docx))
-        
-        
-        
-        saved_files_dir <- NULL
-        pre_processor <- function(metadata, input_file, runtime, knit_meta, files_dir, output_dir) {
-          saved_files_dir <<- files_dir
-          NULL
-        }
-        
-        intermediates_generator <- function(...) {
-          reference_intermediates_generator(saved_files_dir, ..., reference_docx)
-        }
-        
-        # return output format
-        output_format(
-          knitr = knitr,
-          pandoc = pandoc_options(to = "docx",
-                                  from = from_rmarkdown(fig_caption, md_extensions),
-                                  args = args),
-          keep_md = keep_md,
-          df_print = df_print,
-          pre_processor = pre_processor,
-          intermediates_generator = intermediates_generator
-        )
-      }
-      
-      reference_doc_args <- function(type, doc) {
-        if (is.null(doc) || identical(doc, "default")) return()
-        c(paste0("--reference-", if (pandoc2.0()) "doc" else {
-          match.arg(type, c("docx", "odt", "doc"))
-        }), pandoc_path_arg(doc))
-      }
-      
-      
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
       # from the code in this app).
-      rmarkdown::render(tempReport, word_document(reference_docx = "stylesdoc.docx"),
+      rmarkdown::render(tempReport,
                         output_file = file,
                         params = params,
                         envir = new.env(parent = globalenv()))
