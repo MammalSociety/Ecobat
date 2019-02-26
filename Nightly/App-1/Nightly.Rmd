@@ -35,7 +35,7 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 
 # TESTING - load in test data
 
-#B_data <- read.csv("../Data/RiggedHill.csv")
+B_data <- read.csv("../Data/RiggedHill.csv")
 
 ```
 
@@ -44,7 +44,7 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-B_data <- params$n
+#B_data <- params$n
 
 ```
 
@@ -355,7 +355,7 @@ knitr::kable(Table)
 ##### Page Break
 
 # Survey Nights
-Horizontal bars show when acoustic detectors were active.
+Horizontal bars show nights when acoustic detectors recorded bats.
 \newline
 
 ```{r fig.width=12, fig.height=6}
@@ -728,6 +728,11 @@ knitr::kable(Table2)
 ## Nightly Bat Passes for each Month 
 # Mean per Detector
 
+**The mean number of bat passes of each species per night throughout each month. Calculated with (Number of passes each month) / (Number of survey nights each month) for each detector. Values are given to 1 decimal place.**
+\newline
+**We recommend using the median values given above, for the reasons stated above, but provide the mean values in the table below.**
+
+
 # Survey Effort
 **The number of survey nights per month per detector.**
 
@@ -756,10 +761,6 @@ results='asis' #important to run this as it ensures the raw table output isn't p
 knitr::kable(Table, align = "lc")
 
 ```
-
-\newline
-
-**The mean number of bat passes of each species per night throughout each month. Calculated with (Number of passes each month) / (Number of survey nights each month) for each detector. Values are given to 1 decimal place. We recommend using the median values given above, for the reasons stated above, but provide the mean values in the table below.**
 
 \newline
 ```{r}
@@ -901,6 +902,57 @@ knitr::kable(Table)
 
 ```
 
+##### Page Break
+
+# Distribution of Bat Activity Across the Night through Time
+## Per Detector
+
+**Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. Colours indicate kernel densities, with darkest colours showing peaks of activity. These colours are comparative only within each plot, and do not account for overall activity.**
+
+
+```{r, fig.width=10, fig.height=8}
+
+
+for (i in unique(All_data$Spp)) {
+
+print(All_data %>%
+        filter(Spp == i) %>%
+        
+  ggplot(aes(Night, post_set_min)) +
+   stat_density2d(aes(alpha = ..level.., fill =..level..), geom="polygon") + 
+   # geom_density2d() +
+    scale_fill_gradient(low = "yellow", high = "red") +
+   geom_point(size=2, alpha = 0.5) +
+  geom_line(data = sun_data, aes(Night, night_length_min),
+            linetype = "dashed", colour = "red") +
+  xlab("\nDate") + 
+  ylab("Minutes after sunset\n") +
+  #scale_x_date(date_breaks = "1 month", date_labels = "%b %d") +
+  theme_bw() +
+  theme (legend.position = "none") +
+  theme (axis.title.y = element_text(colour="black", size=18,
+                                     face="bold")) +
+  theme (axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+  theme(strip.text.x = element_text(size=18, face="bold")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+  theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+  theme(axis.text.y = element_text(size = 16, colour = "black")) +
+  facet_wrap(Detector.ID~.) +
+  ggtitle(i) +
+  theme(plot.title = element_text(face = "bold.italic", size = 18)))
+ 
+}
+
+
+#position = position_jitter(w = 1, h = 0)) +
+
+```
 
 ##### Page Break
 
@@ -954,138 +1006,7 @@ for (i in (unique(All_data$Spp))) {
 
 ```
 
-##### Page Break
 
-# Distribution of Bat Activity Across the Night through Time
-## Per Detector
-
-**Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. A kernel density **
-
-```{r fig.width=10, fig.height=12}
-
-# plot out each pass 
-
-#for(i in seq_along(SpeciesLoc)) {
-#   
-# npage <- ceiling(length(SpDet)/6)
-#   
-# for(i in seq_len(npage)) {
-# 
-# print(All_data %>%
-#   ggplot(aes(Night, post_set_min)) +
-#   geom_point(size=4, alpha = 0.5, position =
-#                position_jitter(w = 1, h = 0)) +
-#   geom_line(data = sun_data, aes(Night, night_length_min),
-#             linetype = "dashed", colour = "red") +
-#   xlab("\nMonth") + 
-#   ylab("Minutes after sunset\n") +
-#   theme_bw() +
-#   theme (legend.position = "none") +
-#   theme (axis.title.y = element_text(colour="black", size=18,
-#                                      face="bold")) +
-#   theme (axis.title.x = element_text(colour="black", size=18,
-#                                      face="bold")) +
-#   theme(strip.text.x = element_text(size=18, face="bold")) +
-#   theme(panel.grid.major = element_blank(),
-#         panel.grid.minor = element_blank(),
-#         panel.border = element_rect(colour="black", linetype="solid"),
-#         axis.line=element_line(size=0.5, colour="black",
-#                                linetype="solid")) +
-#   theme(axis.text.x = element_text(size=16, hjust=0.5, vjust=1,
-#                                    colour = "black")) +
-#   theme(axis.text.y = element_text(size = 16, colour = "black")) +
-#   facet_wrap_paginate(SppDets~., ncol=2, nrow=3, scales="fixed", page=i)) 
-#  
-# }
-# 
-# 
-
-```
-
-
-```{r, fig.width=10, fig.height=8}
-# 
-# for (i in unique(All_data$Spp)) {
-# 
-# print(All_data %>%
-#         filter(Spp == i) %>%
-#   ggplot(aes(Night, post_set_min)) +
-#   geom_point(size=4, alpha = 0.5, position =
-#                position_jitter(w = 1, h = 0)) +
-#   geom_line(data = sun_data, aes(Night, night_length_min),
-#             linetype = "dashed", colour = "red") +
-#   xlab("\nDate") + 
-#   ylab("Minutes after sunset\n") +
-#   #scale_x_date(date_breaks = "1 month", date_labels = "%b %d") +
-#   theme_bw() +
-#   theme (legend.position = "none") +
-#   theme (axis.title.y = element_text(colour="black", size=18,
-#                                      face="bold")) +
-#   theme (axis.title.x = element_text(colour="black", size=18,
-#                                      face="bold")) +
-#   theme(strip.text.x = element_text(size=18, face="bold")) +
-#   theme(panel.grid.major = element_blank(),
-#         panel.grid.minor = element_blank(),
-#         panel.border = element_rect(colour="black", linetype="solid"),
-#         axis.line=element_line(size=0.5, colour="black",
-#                                linetype="solid")) +
-#   theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
-#                                    colour = "black")) +
-#   theme(axis.text.y = element_text(size = 16, colour = "black")) +
-#   facet_wrap(Detector.ID~.) +
-#   ggtitle(i) +
-#   theme(plot.title = element_text(face = "bold.italic", size = 18)))
-#  
-# }
-# 
-
-```
-
-
-
-```{r, fig.width=10, fig.height=8}
-
-
-for (i in unique(All_data$Spp)) {
-
-print(All_data %>%
-        filter(Spp == i) %>%
-        
-  ggplot(aes(Night, post_set_min)) +
-   stat_density2d(aes(alpha = ..level.., fill =..level..), geom="polygon") + 
-   # geom_density2d() +
-    scale_fill_gradient(low = "yellow", high = "red") +
-   geom_point(size=2, alpha = 0.5) +
-  geom_line(data = sun_data, aes(Night, night_length_min),
-            linetype = "dashed", colour = "red") +
-  xlab("\nDate") + 
-  ylab("Minutes after sunset\n") +
-  #scale_x_date(date_breaks = "1 month", date_labels = "%b %d") +
-  theme_bw() +
-  theme (legend.position = "none") +
-  theme (axis.title.y = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme(strip.text.x = element_text(size=18, face="bold")) +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour="black", linetype="solid"),
-        axis.line=element_line(size=0.5, colour="black",
-                               linetype="solid")) +
-  theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
-                                   colour = "black")) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  facet_wrap(Detector.ID~.) +
-  ggtitle(i) +
-  theme(plot.title = element_text(face = "bold.italic", size = 18)))
- 
-}
-
-
-#position = position_jitter(w = 1, h = 0)) +
-
-```
 
 ##### Page Break
 
