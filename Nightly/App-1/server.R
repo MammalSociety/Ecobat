@@ -9,6 +9,7 @@ library(tidyr)
 library(rcompanion)
 library(suncalc)
 library(ggforce)
+library(janitor)
 
 shinyServer(function(input, output) {
   output$contents <- renderTable({
