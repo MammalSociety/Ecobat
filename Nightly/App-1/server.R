@@ -7,6 +7,7 @@ library(pander)
 library(dplyr)
 library(tidyr)
 library(rcompanion)
+library(suncalc)
 
 shinyServer(function(input, output) {
   output$contents <- renderTable({
