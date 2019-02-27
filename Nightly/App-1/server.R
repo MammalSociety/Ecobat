@@ -12,6 +12,7 @@ library(ggforce)
 library(janitor)
 
 shinyServer(function(input, output) {
+
   output$contents <- renderTable({
     
     # input$file1 will be NULL initially. After the user selects and uploads a 
@@ -43,28 +44,30 @@ shinyServer(function(input, output) {
     filename = "Ecobat Nightly Report.doc", #we want word document output
     
     content = function(file) {
-      # Copy the report file to a temporary directory before processing it, in
+      # Copy the report file and Style file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "Nightly.Rmd") 
-      file.copy("Nightly.Rmd", tempReport, overwrite = TRUE)
-      
+      for(file_to_move in c("Nightly.Rmd", "stylesdoc.docx")){
+        temp <- file.path(tempdir(), file_to_move) 
+        file.copy(file_to_move, temp, overwrite = TRUE)
+      }
+
       #**CRUCIAL CODE
       # this code is responsible for passing the data to Rmd.
-      dataa<-input$file #tells R Markdown where it can find data
-      datab<-read.csv(dataa$datapath, header=TRUE) #tells Rmd where to read the data from
-      author<-input$Author #tells Rmd what to use as Author
+      dataa <- input$file #tells R Markdown where it can find data
+      datab <- read.csv(dataa$datapath, header=TRUE) #tells Rmd where to read the data from
+      author <- input$Author #tells Rmd what to use as Author
       #**END CRUCIAL CODE
       
       print(str(datab))
       
       # Set up parameters to pass to Rmd document
-      params <- list(n = datab, Author=author)
+      params <- list(n = datab, Author = author)
       
       # Knit the document, passing in the `params` list, and eval it in a
       # child of the global environment (this isolates the code in the document
       # from the code in this app).
-      rmarkdown::render(tempReport,
+      rmarkdown::render(file.path(tempdir(), "Nightly.Rmd"),
                         output_file = file,
                         params = params,
                         envir = new.env(parent = globalenv()))
