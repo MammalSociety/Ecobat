@@ -53,6 +53,8 @@ shinyServer(function(input, output) {
       author<-input$Author #tells Rmd what to use as Author
       #**END CRUCIAL CODE
       
+      print(str(datab))
+      
       # Set up parameters to pass to Rmd document
       params <- list(n = datab, Author=author)
       
