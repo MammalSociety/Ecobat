@@ -1,0 +1,420 @@
+---
+title: "Bat Data"
+author: "Steve"
+date: "04/12/2018"
+output: 
+  html_document: 
+    number_sections: yes
+    toc: yes
+---
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+
+#Libraries used
+library(tidyverse) # Enables a consistent approach to data science
+library(suncalc) # Suntimes
+library(knitr)
+#print out code by default
+opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+```
+
+# Packages Used
+
+```{r, echo = TRUE, eval = FALSE}
+library(tidyverse) # Enables a consistent approach to data science
+library(suncalc) # Suntimes
+```
+
+# Read csv file (Elekon's BatExplorer Software)
+
+See <http://www.batlogger.com/en/real-time-systems/batexplorer-2-software.html>
+
+
+The function `BatExplorer_csv` below reads the csv file, _exported from BatExplorer_, and selects the coloumns needed; selecting the columns also puts them in the right order so if there is more than one file they can be combined.
+
+```{r echo = TRUE}
+#Function BatExplorer_csv 
+BatExplorer_csv <- function(pathfile) {
+  
+  df <- readr::read_csv(pathfile, col_names= T) 
+  
+  df <- df %>% 
+    select(Recording,
+           Timestamp, 
+           `Species Text`, 
+           `Calls [#]`,
+           `Mean Call Lenght [ms]`,
+           `Mean Call Distance [ms]`,
+           `Latitude [WGS84]`,
+           `Longitude [WGS84]`
+           )
+}
+
+
+```
+
+
+With the function `BatExplorer_csv` read three csv files exported from _BatExplorer_ `Tavy01.csv, Tavy02.csv and Tavy03.csv`; then combine them into one `data.frame` - `B_data`.
+
+```{r echo = TRUE}
+
+Data1 <- BatExplorer_csv("data//Tavy01.csv")
+Data2 <- BatExplorer_csv("data//Tavy02.csv")
+Data3 <- BatExplorer_csv("data//Tavy03.csv")
+
+B_data <- rbind(Data1, Data2, Data3)
+
+```
+
+
+# Bat Time Metrics
+
+Structure of bat observation data Exported from Elekon BatExplorer
+
+```{r echo = TRUE}
+glimpse(B_data)
+```
+
+## Standardize Variables 
+
+Make variable names consistent for further manipulation; can do the same for other bat sound analysis software e.g. Kalidascope. Make time zone local e.g `"Europe/London"`; adjusts for daylight saving automatically.
+
+```{r, echo = TRUE}
+
+B_data$Scientific <-  B_data$`Species Text`
+#Make Time Zone Local 
+B_data$DateTime <- lubridate::dmy_hms(B_data$Timestamp, tz = "Europe/London")
+B_data$Calls <- B_data$`Calls [#]`
+B_data$Length <- B_data$`Mean Call Lenght [ms]`
+B_data$Distance <- B_data$`Mean Call Distance [ms]`
+B_data$Latitude <- B_data$`Latitude [WGS84]`
+B_data$Longitude <- B_data$`Longitude [WGS84]`
+
+```
+
+Change `spec.` to `spp.`
+
+```{r}
+
+B_data$Scientific <- stringr::str_replace(B_data$Scientific, "spec.", "spp." )
+
+```
+
+
+## Create Usefull Variables
+
+* `Night` date at dusk  
+* `Month` month of observation `Jan, Feb, Mar....`
+* `JustTime` time hh:mm of bat observation (12 hours added so plots correctly as `Night` i.e. dusk to dawn) 
+* `bat_time` time in seconds bat present see <https://rbats-blog.updog.co/2018/06/19/a-bat-time-metric/>
+
+```{r echo = TRUE}
+B_data <- B_data %>% 
+  mutate (Night = DateTime - lubridate::hours(12), # DateTime minus 12 hours
+          Night = lubridate::as_date(Night), # Make Night variable just a date
+          Month = lubridate::month(Night, label = T), # Make Month of observation
+          JustTime = DateTime + lubridate::hours(12),
+          JustTime = hms::as.hms(stringr::str_sub(as.character(JustTime), start = 12, end = 19)),
+          bat_time = (Calls * (Length + Distance)) / 1000) %>% 
+  #Remove NA observations 
+  filter(!is.na(Scientific)) %>% 
+  # Select just columns needed in nice order
+  select(Night, JustTime, DateTime, Scientific, bat_time, Month, Latitude, Longitude) 
+```
+
+```{r echo = TRUE}
+glimpse(B_data)
+```
+
+## Create Suntimes  
+
+Use package `suncalcs` to make `sunset` and `sunrise` columns for each `Night` and the location (`Latitude` and `Longitude`) of the bat survey. 
+
+```{r echo = TRUE}
+# Get number nights between first and last bat observation (plus 1 for dawn)
+num_nights <- as.integer(difftime(max(B_data$Night) , 
+                                  min(B_data$Night) , 
+                                  units = c("days"))) + 1
+
+# Make a date vector of nights between first and last bat observation.
+nightlist <- seq.Date(from=min(B_data$Night), 
+                   length.out = num_nights +1, 
+                   by='days')
+
+# Get suntimes for date vector and Location (Latitude and Longitude)
+setdata <- getSunlightTimes(date = nightlist, 
+                            lat = median(B_data$Latitude, na.rm = T), 
+                            lon = median(B_data$Longitude, na.rm = T), 
+                            tz = "Europe/London")
+
+# Duplicate data.frame to make sunrise data
+risedata <- setdata
+
+# Select  sunset date and time
+setdata <- setdata %>% 
+  select(date, sunset) %>% 
+  mutate(date = lubridate::as_date(date))
+
+# Select  sunrise date and time
+risedata <- risedata %>% 
+  select(date, sunrise) %>% 
+  mutate(date = lubridate::as_date(date),
+         date = date - lubridate::days(1))
+
+# Combine sunset and risedata by 
+sun_data <- dplyr::full_join(setdata, risedata, by="date")
+
+# Rename date as Night
+colnames(sun_data) <- c("Night", "sunset", "sunrise")
+
+# Join bat data with the sundata by Night
+joined_data <- dplyr::left_join(B_data, sun_data, by="Night")
+```
+
+## Create Variables Relative to Suntimes and Bat Observation
+
+Variables relative to suntimes and bat observation  
+
+* `post_set_min` bat observation time minutes after sunset  
+* `pre_rise_min` bat observation time minutes before sunrise  
+* `post_set_hr` bat observation time hours after sunset  
+* `pre_rise_hr` bat observation time hours before sunrise  
+* `post_set_hr_int` bat observation time as an integer (hour) after sunset 
+    + `-0.5` to `0.49` hours is `0` hour  
+    + `0.5` to `1.49` hours is `1` hour  
+    + `1.5` to `2.49` hours is `2` hour  
+    + `2.5` to `3.49` hours is `3` hour ect...  
+* `pre_rise_hr_int` bat observation time as an integer (hour) before sunrise 
+    + `-0.5` to `0.49` hours is `0` hour  
+    + `0.5` to `1.49` hours is `1` hour  
+    + `1.5` to `2.49` hours is `2` hour  
+    + `2.5` to `3.49` hours is `3` hour ect...  
+* `night_length_hr`  length of the night in hours    
+
+```{r echo = TRUE}
+# To make sure difference is in minutes/hours etc... use difftime 
+All_data <- joined_data %>% 
+  mutate(post_set_min = as.numeric(difftime(DateTime, sunset, units='mins')),
+         pre_rise_min = as.numeric(difftime(sunrise, DateTime, units='mins')),
+         post_set_hr = as.numeric(difftime(DateTime, sunset, units='hours')),
+         pre_rise_hr = as.numeric(difftime(sunrise, DateTime, units='hours')),
+         post_set_hr_int = as.integer(round(post_set_hr, digits = 0)),
+         pre_rise_hr_int = as.integer(round(pre_rise_hr, digits = 0)),
+         night_length_hr = as.numeric(difftime(sunrise, sunset, units='hours')))
+# Look at data
+glimpse(All_data)
+```
+
+```{r eval = FALSE}
+# Not Run
+# Check how rounding hours to int works in practice
+test_vector <- c(0.35, -0.40, 1.2, 1.5, 2.49, 3.0, 4.51, NA)
+
+as.integer(round(test_vector, digits = 0))
+
+```
+
+## Roost Emergence Time and Bat Observation
+
+based on: _Russ, Jon. 2012. British Bat Calls a Guide to Species Identification._ 
+_Pelagic Publishing._
+
+For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
+
+```{r echo = TRUE}
+#Russ(2012) Bat roost emergence times minutes after sunset
+Scientific <- c("Barbastella barbastellus",
+                "Eptesicus serotinus",
+                "Myotis alcathoe",
+                "Myotis bechsteinii",
+                "Myotis brandtii",
+                "Myotis daubentonii",
+                "Myotis mystacinus",
+                "Myotis nattereri",
+                "Myotis spp.",
+                "Nyctalus leisleri",
+                "Nyctalus noctula",
+                "Nyctalus spp.",
+                "Pipistrellus nathusii",
+                "Pipistrellus pipistrellus",
+                "Pipistrellus pygmaeus",
+                "Pipistrellus spp.",
+                "Plecotus auritus",
+                "Plecotus austriacus",
+                "Rhinolophus ferrumequinum",
+                "Rhinolophus hipposideros")
+
+lower <- c(25, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 18, 22, 22, 18, 40, 40, 35, 35)
+upper <- c(60, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 28, 32, 28, 32, 60, 60, 48, 50)
+russ <- tibble(Scientific, lower, upper)
+
+```
+
+
+```{r echo = TRUE}
+#Join with Jon Russ data with bat observation data All_data
+All_data <- dplyr::left_join(All_data, russ, by = "Scientific")
+# Look at data
+glimpse(All_data)
+```
+
+# Summary Tables  
+
+## Sun Times
+
+```{r echo = TRUE}
+Table <- All_data %>% 
+  select(Night, sunset, sunrise) %>% 
+  distinct() %>% 
+  mutate(night_length = round(as.numeric(difftime(sunrise, sunset, units='hours')), digits = 1),
+         sunset = stringr::str_sub(as.character(sunset), 11, 16),
+         sunrise = stringr::str_sub(as.character(sunrise), 11, 16))
+
+colnames(Table) <- c("Night", "Sunset (hh:mm)", "Sunrise (hh:mm)", "Night Length (hours)")
+
+
+knitr::kable(Table, align = ("lrrr"))
+```
+
+## Count All Bat Passes
+
+```{r, echo = TRUE}
+# Aggregate data into Species and count
+Table <- All_data %>%
+  group_by(Scientific) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+#Change column Names so more meaningful  
+colnames(Table) <- c("Scientific Name", "Count (No)")
+
+# kable is a simple table generator
+knitr::kable(Table)
+
+```
+
+## Bat Passes by Night
+
+```{r, echo = TRUE}
+Table <- All_data %>%
+  group_by(Scientific, Night) %>% 
+  count() %>% 
+  spread(Night, n)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table
+knitr::kable(Table)
+
+```
+
+## Bat Passes per Hour by Night
+
+This calculates the average bat passes per night by dividing the total number of
+bat passess for the night by the the night length (hrs) (`sunrise` - `sunset`).
+
+```{r, echo = TRUE}
+Table <- All_data %>%
+  group_by(Scientific, Night, night_length_hr) %>% 
+  # count number of passes per night by species - makes coloumn "n""
+  count() %>% 
+  # calculate average bat passes per hour for each Night and species
+  summarise(Act_per_hr = n / night_length_hr) %>%
+  # Remove Night Length column from the Table
+  select(-night_length_hr) %>% 
+  spread(Night, Act_per_hr)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table with 1 decimal point
+knitr::kable(Table, digits = 1)
+
+```
+
+
+## Bat Passes by Month
+
+```{r, echo = TRUE}
+Table <- All_data %>%
+  group_by(Scientific, Month) %>% 
+  count() %>% 
+  spread(Month, n)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table
+knitr::kable(Table)
+
+```
+
+## Time (Seconds) Bat Present  
+
+```{r echo = TRUE}
+Table <- All_data %>% 
+  group_by(Night, Scientific) %>% 
+  summarise(total_act = sum(bat_time)) %>% 
+  spread(Night, total_act)
+
+# Make all NA's = ""
+Table[is.na(Table)] <- 0
+
+# simple table with 1 decimal point
+knitr::kable(Table, digits = 1)
+
+```
+
+## Time (Minutes and Seconds) Bat Present  
+
+```{r echo = TRUE}
+Table <- All_data %>% 
+  group_by(Night, Scientific) %>% 
+  summarise(total_act = sum(bat_time)) %>% 
+  ungroup(Night, Scientific) %>% 
+  mutate(total_act = round(total_act, digits = 0),
+         total_act = as.character(lubridate::seconds_to_period(total_act))) %>% 
+  spread(Night, total_act)
+
+# Make all NA's = ""
+Table[is.na(Table)] <- ""
+
+# simple table
+knitr::kable(Table)
+
+```
+
+## Bat Passes by Hour after Sunset
+
+```{r, echo = TRUE}
+Table <- All_data %>%
+  group_by(Scientific, post_set_hr_int) %>% 
+  count() %>% 
+  spread(post_set_hr_int, n)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table
+knitr::kable(Table)
+
+```
+
+## Bat Passes _Near_ a Roost by Night (Russ 2012)
+
+```{r echo = TRUE}
+Table <- All_data %>% 
+  filter(post_set_min <= upper) %>% 
+  group_by(Night, Scientific) %>% 
+  count() %>% 
+  spread(Night, n)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table
+knitr::kable(Table)
+```
+
