@@ -32,6 +32,7 @@ ui<-(fluidPage( #fluidpage means page width determined by window size
       tags$br(), #adds a gap between two sections
       
       textInput(inputId = "Author", label = "Insert Author Name"), #input field for author name
+      textInput(inputId = "SiteName", label = "Insert Site Name"), #input field for site name
       
       tags$hr(), #adds a horizontal line
       uiOutput("ui.download"), # instead of conditionalPanel

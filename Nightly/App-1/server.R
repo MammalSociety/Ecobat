@@ -60,12 +60,14 @@ shinyServer(function(input, output) {
         dataa <- input$file #tells R Markdown where it can find data
         datab <- read.csv(dataa$datapath, header=TRUE) #tells Rmd where to read the data from
         author <- input$Author #tells Rmd what to use as Author
+        sitename <- input$SiteName #tells Rmd what to use as Site Name
         #**END CRUCIAL CODE
+        
         
         print(str(datab))
         
         # Set up parameters to pass to Rmd document
-        params <- list(n = datab, Author = author)
+        params <- list(n = datab, Author = author, SiteName = sitename)
         
         incProgress(0.3, "Building report, this may take a minute...")
         

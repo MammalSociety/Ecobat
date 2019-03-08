@@ -1,11 +1,13 @@
 ---
 title: "Ecobat Bat Activity Analysis"
+subtitle: 'Site Name: `r params$SiteName`'
 author: '`r params$Author`'
 date: '`r strftime(Sys.time(), format = "%d/%m/%Y")`'
 output: word_document
 params:
   n: NA
   Author: NA
+  SiteName: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -26,9 +28,7 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-#df <- read.csv("C:/Users/Sophie/Documents/Bats/Fake Data/paper2.csv", header = TRUE)
-#dfa <- read.csv("C:/Users/Sophie/Downloads/download (6).csv", header = TRUE)
-#df <- read.csv("C:/Users/Sophie/Downloads/download (8).csv", header = TRUE)
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
 ```
 
 ```{r}
@@ -62,6 +62,7 @@ df$location_name <- factor(df$location_name)
 ```
 
 ###Summary
+
 Bat surveys were conducted at `r (llocation)`, for `r (nights)` nights between `r min(date)` and `r max(date)`, using `r ldetector` static bat detectors. The maximum of passes recorded in a single night was `r max(df$passes)` passes, and `r species` species were recorded.
 
 The reference range dataset was stratified to include:
@@ -130,6 +131,7 @@ n_pages1 <- ceiling(nrow(unique(ys[,c("species", "location_name")]))/5)
 
 
 ####Table 1
+
 Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r}
 library(plyr)
@@ -160,6 +162,7 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ***
 
 ####Table 2
+
 Summary table showing key metrics for each species recorded.
 ```{r}
 library(plyr)
@@ -221,6 +224,7 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right'
 ***
 
 ###Figures
+
 ```{r fig.width=9, fig.height=6}
 
 #boxplot if 1 location
@@ -234,7 +238,7 @@ if(loc=="1") {graphbox<-ggplot(ys, aes(x=species, y=percentile))+ #add lines fir
   geom_boxplot(df, mapping = aes(fill=species))+
   xlab("Species")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_colour_grey()+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20)) +
   expand_limits(y=c(0,100))+
@@ -270,7 +274,7 @@ if(loc>2 & loc<5 & spn=="1") {graphboxb<-ggplot(ys, aes(x=location_name, y=perce
   geom_boxplot(ys, mapping = aes(fill=location_name))+
   xlab("Location name")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_fill_grey()+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
@@ -306,7 +310,7 @@ if(loc>2 & loc<5 & spn>1) {graphboxb<-ggplot(ys, aes(x=location_name, y=percenti
   geom_boxplot(ys, mapping = aes(fill=location_name))+
   xlab("Location name")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_fill_manual(values=greys)+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
@@ -344,7 +348,7 @@ if(loc>=5 & spn=="1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))
   geom_boxplot(ys, mapping = aes(fill=location_name))+
   xlab("Location name")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_fill_grey()+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
@@ -382,7 +386,7 @@ if(loc>=5 & loc<10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=perc
   geom_boxplot(ys, mapping = aes(fill=location_name))+
   xlab("Location name")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_fill_grey()+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
@@ -421,7 +425,7 @@ if(loc>10 & spn>"1") {graphboxc<-ggplot(ys, aes(x=location_name, y=percentile))+
   geom_boxplot(ys, mapping = aes(fill=location_name))+
   xlab("Location name")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_colour_grey()+
+  scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
@@ -945,9 +949,9 @@ if((difftime(max(ys$date),min(ys$date), units='days')>21) & (difftime(max(ys$dat
 ## date ~ percentile graph if 1 location, 1 species
 #if time diff between 50 and 300 days
 
-if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc=="1" & spn=="1"){ graphj<-ggplot(ys, aes(x= date, y= percentile)) +
-  geom_point(ys, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$date),min(ys$date), units='days')<300) & loc=="1" & spn=="1"){ ggplot(ys, aes(x= date, y= percentile)) +
+   geom_point(ys, size=3, shape=1, 
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -969,8 +973,8 @@ if((difftime(max(ys$date),min(ys$date), units='days')>50) & (difftime(max(ys$dat
   geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-graphj}
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00")
+  }
 
 ##end code for date graph
 ```

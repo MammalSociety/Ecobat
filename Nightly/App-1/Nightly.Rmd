@@ -1,5 +1,6 @@
 ---
 title: "Nightly Bat Activity Analysis"
+subtitle: 'Site Name: `r params$SiteName`'
 author: 'Author: `r params$Author`'
 date: '`r strftime(Sys.time(), format = "%d/%m/%Y")`'
 output: 
@@ -8,6 +9,7 @@ output:
 params:
   n: NA
   Author: NA
+  SiteName: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -36,6 +38,7 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
 
 ```
 
@@ -48,19 +51,6 @@ B_data <- params$n
 
 ```
 
-
-```{r, echo=FALSE}
-
-# IF CAN'T GET HEADER IN REF DOC TO WORK ADD A PHOTO LIKE THIS:
-
-#fig.cap="This report was produced free of charge by the Mammal Society to support evidence-based conservation of bats."
-
-#knitr::include_graphics("TMS_logo.png")
-
-# \newline
-
-#The analyses are based on data supplied by the user to the Mammal Society's Ecobat website.  The outputs are designed to assist decision-making, but do not replace expert interpretation by the user. The creation of the Ecobat tool was supported by the Natural Environment Research Council (NERC).
-```
 
 ```{r}
 
@@ -75,7 +65,7 @@ B_data$Timestamp <- paste(B_data$Date, B_data$Time) }
 
   
 #Make Time Zone Local
-B_data$DateTime <- lubridate::dmy_hms(B_data$Timestamp, tz = "Europe/London")
+B_data$DateTime <- lubridate::ymd_hms(B_data$Timestamp, tz = "Europe/London")
 
 # change any instances of spec. to spp. in the species column
 #B_data$Species <- stringr::str_replace(B_data$Species, "spec.", "spp." )
@@ -236,28 +226,42 @@ All_data <- joined_data %>%
 
 ```{r}
 #Russ(2012) Bat roost emergence times minutes after sunset
+
+# All_data <- All_data %>%
+#   mutate(Species=replace(Species, Species == "Pipistrellus", "Pipistrellus spp.")) 
+
 Species <- c("Barbastella barbastellus",
-                "Eptesicus serotinus",
-                "Myotis alcathoe",
-                "Myotis bechsteinii",
-                "Myotis brandtii",
-                "Myotis daubentonii",
-                "Myotis mystacinus",
-                "Myotis nattereri",
-                "Myotis spp.",
-                "Nyctalus leisleri",
-                "Nyctalus noctula",
-                "Nyctalus spp.",
-                "Pipistrellus nathusii",
-                "Pipistrellus pipistrellus",
-                "Pipistrellus pygmaeus",
-                "Pipistrellus spp.",
-                "Plecotus auritus",
-                "Plecotus austriacus",
-                "Rhinolophus ferrumequinum",
-                "Rhinolophus hipposideros")
+              "Eptesicus serotinus",
+              "Eptesicus",
+              "Myotis alcathoe",
+              "Myotis bechsteinii",
+              "Myotis brandtii",
+              "Myotis daubentonii",
+              "Myotis mystacinus",
+              "Myotis nattereri",
+              "Myotis",
+              "Nyctalus leisleri",
+              "Nyctalus noctula",
+              "Nyctalus",
+              "Nyctaloid",
+              "Pipistrellus nathusii",
+              "Pipistrellus pipistrellus",
+              "Pipistrellus pygmaeus",
+              "Pipistrellus",
+              "Plecotus auritus",
+              "Plecotus austriacus",
+              "Plecotus",
+              "Rhinolophus ferrumequinum",
+              "Rhinolophus hipposideros",
+              "Rhinolophus")
+
+
+
+
+
 
 Spp <- c("Barbastelle",
+         "Serotine",
          "Serotine",
          "Alcathoe",
          "Bechstein's",
@@ -265,21 +269,25 @@ Spp <- c("Barbastelle",
          "Daubenton's",
          "Whiskered",
          "Natterer's",
-         "Myotis spp.",
+         "Myotis",
          "Leisler's",
          "Noctule",
-         "Nyctalus spp.",
+         "Nyctalus",
+         "Nyctaloid",
          "Nathusius'",
          "Common pipistrelle",
          "Soprano pipistrelle",
-         "Pipistrellus spp.",
+         "Pipistrellus",
          "Brown long-eared",
          "Grey long-eared",
+         "Long-eared bats",
          "Greater horseshoe",
-         "Lesser horseshoe")
+         "Lesser horseshoe",
+         "Horseshoe bats")
 
-lower <- c(25, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 18, 22, 22, 18, 40, 40, 35, 35)
-upper <- c(60, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 28, 32, 28, 32, 60, 60, 48, 50)
+
+lower <- c(25, 20, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 5, 18, 22, 22, 18, 40, 40, 40, 35, 35, 35)
+upper <- c(60, 25, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 25, 28, 32, 28, 32, 60, 60, 60, 48, 50, 50)
 russ <- tibble(Species, Spp, lower, upper)
 
 
@@ -290,6 +298,9 @@ russ <- tibble(Species, Spp, lower, upper)
 #Join with Jon Russ data with bat observation data All_data
 All_data <- dplyr::left_join(All_data, russ, by = "Species")
 
+
+#All_data <- All_data %>%
+  #mutate(Spp=replace(Spp, Spp == "Pipistrellus", "Pipistrellus spp."))
 
 
 # create lists to be used for tables and graphs later:
@@ -318,12 +329,13 @@ colourCount <- length(unique(All_data$Spp))
 getPalette <- colorRampPalette(brewer.pal(9, "RdBu"))
 
 
-All_data$Spp <- factor(All_data$Spp,levels=c("Pipistrellus spp.", "Common pipistrelle", "Soprano pipistrelle","Nathusius'", "Nyctalus spp.","Noctule", "Leisler's","Serotine", "Brown long-eared", "Grey long-eared", "Myotis spp.","Alcathoe", "Bechstein's",  "Brandt's", "Daubenton's","Whiskered", "Natterer's", "Barbastelle", "Greater horseshoe", "Lesser horseshoe"))
+All_data$Spp <- factor(All_data$Spp,levels=c("Pipistrellus", "Common pipistrelle", "Soprano pipistrelle", "Nathusius'", "Noctule", "Leisler's", "Nyctalus", "Serotine", "Nyctaloid", "Brown long-eared", "Grey long-eared", "Long-eared bats", "Myotis","Alcathoe", "Bechstein's",  "Brandt's", "Daubenton's","Whiskered", "Natterer's", "Barbastelle", "Greater horseshoe", "Lesser horseshoe", "Horseshoe bats"))
          
 ```
 
-#Summary
-Bat surveys were conducted on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(Species_list))`** species were recorded. Detectors were placed at the following locations:
+# Summary
+
+Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(Species_list))`** species were recorded. Detectors were placed at the following locations:
 
 ```{r}
 Table <- All_data %>%
@@ -338,6 +350,7 @@ knitr::kable(Table)
 ```
 
 # Survey Nights
+The number of nights that bats were detected on each recorder. This is not the same as the number of nights that detectors were active if there were nights when no bats were detected.
 
 ```{r}
 
@@ -762,7 +775,8 @@ knitr::kable(Table, align = "lc")
 
 ```
 
-\newline
+##### Page Break
+
 ```{r}
 
 Table <- All_data %>%
