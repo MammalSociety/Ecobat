@@ -29,6 +29,8 @@ library(png)
 library(grid)
 library(janitor) # used to add totals rows to bottoms of tables
 library(RColorBrewer) # used for colourblind friendly colour scales on figures
+library(rcompanion)
+library(rmarkdown)
 
 
 ```
@@ -38,7 +40,9 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/Leanne.csv")
+#B_data <- read.csv("./download (10).csv")
+
 
 ```
 
@@ -49,6 +53,12 @@ library(RColorBrewer) # used for colourblind friendly colour scales on figures
 #read data in from shiny
 B_data <- params$n
 
+
+cnames <- names(B_data)
+cnames[grepl('location_name$', cnames)] <- 'location_name'
+
+names(B_data) <- cnames
+
 ```
 
 
@@ -58,20 +68,20 @@ B_data <- params$n
 
 
 # if there is a separate column for date and time then join together to form a new column called Timestamp
-if (("Date" %in% colnames(B_data) == TRUE) &
-  ("Time" %in% colnames(B_data) == TRUE)) {
+if (("date" %in% colnames(B_data) == TRUE) &
+  ("time" %in% colnames(B_data) == TRUE)) {
 
-B_data$Timestamp <- paste(B_data$Date, B_data$Time) }
+B_data$timestamp <- paste(B_data$date, B_data$time) }
 
   
 #Make Time Zone Local
-B_data$DateTime <- lubridate::ymd_hms(B_data$Timestamp, tz = "Europe/London")
+B_data$DateTime <- lubridate::ymd_hms(B_data$timestamp, tz = "Europe/London")
 
 # change any instances of spec. to spp. in the species column
-#B_data$Species <- stringr::str_replace(B_data$Species, "spec.", "spp." )
+#B_data$species <- stringr::str_replace(B_data$species, "spec.", "spp." )
 
 
-B_data$SppDets <- paste(B_data$Species, B_data$Detector.ID, sep = ' : ')
+B_data$SppDets <- paste(B_data$species, B_data$location_name, sep = ' : ')
 
 ```
 
@@ -84,53 +94,12 @@ B_data$SppDets <- paste(B_data$Species, B_data$Detector.ID, sep = ' : ')
 # `JustTime` time hh:mm of bat observation (12 hours added so plots correctly as `Night` i.e. dusk to dawn)
 # `bat_time` time in seconds bat present see <https://rbats-blog.updog.co/2018/06/19/a-bat-time-metric/>
 
-
-# if there is no information about the calls of the bats do this:
-
-if ("Calls" %in% colnames(B_data) == FALSE)
-   {
-
   B_data2 <- B_data %>% 
   mutate(Night = DateTime - lubridate::hours(12)) %>% # DateTime minus 12 hours
   mutate(Night = lubridate::as_date(Night)) %>%
   mutate(Month = lubridate::month(Night, label = T)) %>% # Make Month of observation
-  mutate(JustTime = DateTime + lubridate::hours(12)) %>%
-  mutate(JustTime = hms::as.hms(stringr::str_sub(as.character(JustTime), start = 12, end = 19))) %>%
-  #mutate(Bat_time = (Calls * (Length + Distance)) / 1000) %>% 
-  #Remove NA observations 
-  filter(!is.na(Species)) %>%
-  select(Night, JustTime, DateTime, Species, Month, Latitude, Longitude, Detector.ID, SppDets)
-}
+  filter(!is.na(species))
 
-# if call info is provided, calculate 'Bat_time'
-
-if ("Calls" %in% colnames(B_data) == TRUE)
-   {
-  B_data2 <- B_data %>% 
-  mutate(Night = DateTime - lubridate::hours(12)) %>% # DateTime minus 12 hours
-  mutate(Night = lubridate::as_date(Night)) %>%
-  mutate(Month = lubridate::month(Night, label = T)) %>% # Make Month of observation
-  mutate(JustTime = DateTime + lubridate::hours(12)) %>%
-  mutate(JustTime = hms::as.hms(stringr::str_sub(as.character(JustTime), start = 12, end = 19))) %>%
-  mutate(Bat_time = (Calls * (Length + Distance)) / 1000) %>% 
-  #Remove NA observations 
-  filter(!is.na(Species)) %>%
-  select(Night, JustTime, DateTime, Species, Bat_time, Month, Latitude, Longitude, Detector.ID, SppDets)
-}
-
-     
-# Change the format of the date from Y-m-d to d-m-Y:
-
-# B_data2$Night2 <- as.Date(as.character(B_data2$Night, tz = "Europe/London", "%d/%m/%Y"), "%Y-%m-%d")
-# 
-# B_data2$Night2 <- format(as.Date(B_data2$Night, format = "%Y-%m-%d"), format = "%d/%m/%Y")
-# 
-# B_data2$Night3 <- as.Date(B_data2$Night2, format = "%d/%m/%Y")
-# 
-# glimpse(B_data2)
-# 
-# # B_data2$Night2 <- format(B_data2$Night, format=c("%d-%m-%Y"))
-# # B_data2$Night2 <- as.Date(B_data2$Night, format=c("%d-%m-%Y"))
 
 
 ```
@@ -140,7 +109,7 @@ if ("Calls" %in% colnames(B_data) == TRUE)
 
 # Create suntimes
 
-# Use package `suncalcs` to make `sunset` and `sunrise` columns for each `Night` and the location (`Latitude` and `Longitude`) of the bat survey.
+# Use package `suncalcs` to make `sunset` and `sunrise` columns for each `Night` and the location (`lat` and `lon`) of the bat survey.
 
 # Get number nights between first and last bat observation (plus 1 for dawn)
 num_nights <- as.integer(difftime(max(B_data2$Night) , 
@@ -152,10 +121,10 @@ nightlist <- seq.Date(from=min(B_data2$Night),
                    length.out = num_nights +1, 
                    by='days')
 
-# Get suntimes for date vector and Location (Latitude and Longitude)
+# Get suntimes for date vector and Location (lat and lon)
 setdata <- getSunlightTimes(date = nightlist, 
-                            lat = median(B_data2$Latitude, na.rm = T), 
-                            lon = median(B_data2$Longitude, na.rm = T), 
+                            lat = median(B_data2$lat, na.rm = T), 
+                            lon = median(B_data2$lon, na.rm = T), 
                             tz = "Europe/London")
 
 # Duplicate data.frame to make sunrise data
@@ -228,9 +197,9 @@ All_data <- joined_data %>%
 #Russ(2012) Bat roost emergence times minutes after sunset
 
 # All_data <- All_data %>%
-#   mutate(Species=replace(Species, Species == "Pipistrellus", "Pipistrellus spp.")) 
+#   mutate(species=replace(species, species == "Pipistrellus", "Pipistrellus spp.")) 
 
-Species <- c("Barbastella barbastellus",
+species <- c("Barbastella barbastellus",
               "Eptesicus serotinus",
               "Eptesicus",
               "Myotis alcathoe",
@@ -288,7 +257,7 @@ Spp <- c("Barbastelle",
 
 lower <- c(25, 20, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 5, 18, 22, 22, 18, 40, 40, 40, 35, 35, 35)
 upper <- c(60, 25, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 25, 28, 32, 28, 32, 60, 60, 60, 48, 50, 50)
-russ <- tibble(Species, Spp, lower, upper)
+russ <- tibble(species, Spp, lower, upper)
 
 
 ```
@@ -296,7 +265,7 @@ russ <- tibble(Species, Spp, lower, upper)
 
 ```{r}
 #Join with Jon Russ data with bat observation data All_data
-All_data <- dplyr::left_join(All_data, russ, by = "Species")
+All_data <- dplyr::left_join(All_data, russ, by = "species")
 
 
 #All_data <- All_data %>%
@@ -306,10 +275,10 @@ All_data <- dplyr::left_join(All_data, russ, by = "Species")
 # create lists to be used for tables and graphs later:
 
 # list of all of the unique locations in the dataset
-Dets <- c(unique(All_data$Detector.ID))
+Dets <- c(unique(All_data$location_name))
 
 # list of all of the different species in the dataset
-Species_list <- unique(All_data$Species)
+species_list <- unique(All_data$species)
 Spp_list <- unique(All_data$Spp)
 
 # list of all of the unique species-location combinations
@@ -335,14 +304,14 @@ All_data$Spp <- factor(All_data$Spp,levels=c("Pipistrellus", "Common pipistrelle
 
 # Summary
 
-Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(Species_list))`** species were recorded. Detectors were placed at the following locations:
+Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(species_list))`** species were recorded. Detectors were placed at the following locations:
 
 ```{r}
 Table <- All_data %>%
-  select(Detector.ID, Latitude, Longitude) %>%
-  group_by(Detector.ID, Latitude, Longitude) %>%
+  select(location_name, lat, lon) %>%
+  group_by(location_name, lat, lon) %>%
   distinct() %>%
-  rename("Detector ID" = Detector.ID)
+  rename("Detector ID" = location_name)
 
 knitr::kable(Table)
 
@@ -355,10 +324,10 @@ The number of nights that bats were detected on each recorder. This is not the s
 ```{r}
 
 Table <- All_data %>%
-  group_by(Detector.ID) %>%
+  group_by(location_name) %>%
   summarise(count = n_distinct(Night)) %>%
-  arrange(Detector.ID) %>%
-  rename("Detector ID" = Detector.ID) %>%
+  arrange(location_name) %>%
+  rename("Detector ID" = location_name) %>%
   rename("No. of nights" = count)
 
 knitr::kable(Table)
@@ -374,12 +343,12 @@ Horizontal bars show nights when acoustic detectors recorded bats.
 ```{r fig.width=12, fig.height=6}
 
 Effort <- All_data %>%
-  arrange(Detector.ID, Night) %>%
-  group_by(Detector.ID, Night) %>%
+  arrange(location_name, Night) %>%
+  group_by(location_name, Night) %>%
   filter(row_number()==1) %>%
   ungroup() %>%
-  select(Detector.ID, Night) %>%
-  group_by(Detector.ID) %>%
+  select(location_name, Night) %>%
+  group_by(location_name) %>%
   mutate(diff_days = round(as.numeric(difftime(Night, lag(Night), units='days')), digits = 1)) %>%
   replace(is.na(.), 0) %>%
   mutate(start = if_else(diff_days == 0 | diff_days > 1, paste(as.Date(Night)), "")) %>%
@@ -395,7 +364,7 @@ Effort$end <- as.Date(Effort$end)
 
 Effort %>%
   ggplot() +
-  geom_segment(aes(x=start, xend=end, y=Detector.ID, yend=Detector.ID), size = 6) +
+  geom_segment(aes(x=start, xend=end, y=location_name, yend=location_name), size = 6) +
   xlab("\nDate") +
   ylab("Detector ID\n") +
   scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
@@ -451,7 +420,7 @@ knitr::kable(Table, align = "cccc")
 \newline  \newline
 ```{r}
 
-# Aggregate data into Species and count
+# Aggregate data into species and count
 
   Table <- All_data %>%
   group_by(Spp) %>% 
@@ -465,7 +434,7 @@ knitr::kable(Table, align = "cccc")
   
 
 #Change column Names so more meaningful  
-colnames(Table) <- c("Species", "Count (No)", "Percentage of total (%)")
+colnames(Table) <- c("species", "Count (No)", "Percentage of total (%)")
 
 # kable is a simple table generator
 knitr::kable(Table, align = "llll")
@@ -479,7 +448,7 @@ knitr::kable(Table, align = "llll")
 
 ```{r}
 
-# Aggregate data into Species and count
+# Aggregate data into species and count
 
 
 # TO CREATE A SEPARATE TABLE FOR EACH LOCATION:
@@ -487,13 +456,13 @@ knitr::kable(Table, align = "llll")
 # for (i in Dets) {
 # 
 #   print(All_data %>%
-#   filter(Detector.ID == i) %>%
-#   group_by(Species, Detector.ID) %>% 
+#   filter(location_name == i) %>%
+#   group_by(species, location_name) %>% 
 #   count() %>% 
 #   arrange(desc(n)) %>%
 #   ungroup() %>%
 #   mutate(Percentage = n / sum(n) *100 ) %>%
-#   rename(Location = Detector.ID))
+#   rename(Location = location_name))
 #   }
 
 if(length(Dets) >1) {
@@ -501,15 +470,15 @@ if(length(Dets) >1) {
 
 # TO CREATE A TABLE WITH LOCATION AS A COLUMN
   Table <- All_data %>%
-  group_by(Spp, Detector.ID) %>% 
+  group_by(Spp, location_name) %>% 
   count() %>% 
-  arrange(Spp, Detector.ID) %>%
+  arrange(Spp, location_name) %>%
   ungroup() %>%
-  group_by(Detector.ID) %>%
+  group_by(location_name) %>%
   mutate(Percentage = round((n / sum(n) *100), digits = 1)) 
   
 #Change column Names so more meaningful  
-colnames(Table) <- c("Species", "Detector ID", "Count (No)", "Percentage by Detector (%)")
+colnames(Table) <- c("species", "Detector ID", "Count (No)", "Percentage by Detector (%)")
 
 # kable is a simple table generator
 knitr::kable(Table, align = 'lccc')
@@ -519,7 +488,7 @@ knitr::kable(Table, align = 'lccc')
 
 ##### Page Break
 
-# Species Composition of Passes at each Detector
+# species Composition of Passes at each Detector
 
 \newline
 
@@ -528,19 +497,19 @@ knitr::kable(Table, align = 'lccc')
 # stacked bar plot for proportion of calls by species for each detector
 
   Calls_perc <- All_data %>%
-  group_by(Spp, Detector.ID) %>% 
+  group_by(Spp, location_name) %>% 
   count() %>% 
-  arrange(Detector.ID, desc(Spp)) %>%
+  arrange(location_name, desc(Spp)) %>%
   ungroup() %>%
-  group_by(Detector.ID) %>%
+  group_by(location_name) %>%
   mutate(Percentage = round((n / sum(n) *100), digits = 1))
 
-ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
+ggplot(Calls_perc, aes(x = location_name, y = Percentage, fill = Spp)) +
   geom_bar(stat = "identity") +
   xlab("\nDetector ID") +
   ylab("Percentage of calls (%)\n") +
   scale_fill_manual(values = getPalette(colourCount)) +
-  guides(fill=guide_legend(title="Species")) +
+  guides(fill=guide_legend(title="species")) +
   theme_bw() +
   theme (axis.title.y = element_text(colour="black", size=20,
                                      face="bold")) +
@@ -560,117 +529,7 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
 ```
 
 
-```{r}
 
-# \newline  \newline
-# 
-# ***
-# 
-# \newline  \newline
-# 
-# # Total Bat Passes by Night 
-# ## All Detectors  
-# 
-# \newline  \newline
-
-# Table <- All_data %>%
-#   group_by(Spp, Night) %>% 
-#   count() %>% 
-#   spread(Night, n)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
-# 
-# # code for having species as the rownames on the left
-# Table2 <- Table %>%
-#   remove_rownames %>%
-#   column_to_rownames(var="Spp") 
-# 
-# # list <- c(unique(Table$Species))
-# # Table3 <- as.data.frame(t(Table[,-1]))
-# # colnames(Table3) <- list
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
-# panderOptions('table.split.table', 120)
-# 
-# pander(Table2, style = "multiline", justify = "left")
-# 
-
-```
-
-```{r}
-# 
-# `r if(length(Dets)>1) {'\n\n***\n\n# Total Bat Passes by Night\n\n' }`
-# 
-# if(length(Dets) >1) {
-# 
-# Table <- All_data %>%
-#   group_by(SppDets, Night) %>% 
-#   count() %>% 
-#   spread(Night, n)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
-# 
-# # code for having species as the rownames on the left
-# Table2 <- Table %>%
-#   remove_rownames %>%
-#   column_to_rownames(var="SppDets")
-# 
-# # if wanting species along the top:
-# # list <- c(unique(Table$Species))
-# # Table3 <- as.data.frame(t(Table[,-1]))
-# # colnames(Table3) <- list
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
-# panderOptions('table.split.table', 100)
-# panderOptions('table.split.cells', 2)
-# 
-# pander(Table2, style = "multiline")
-# 
-# }
-
-```
-
-```{r}
-
-# ## Mean Bat Passes per Hour
-# 
-# **Computed as (total bat passes per night)/(night length in hours).**
-# 
-# \newline  \newline
-# 
-# 
-# Table <- All_data %>%
-#   group_by(Spp, Night, night_length_hr) %>% 
-#   # count number of passes per night by species - makes coloumn "n""
-#   count() %>% 
-#   # calculate average bat passes per hour for each Night and species
-#   summarise(Act_per_hr = n / night_length_hr) %>%
-#   # Remove Night Length column from the Table
-#   select(-night_length_hr) %>% 
-#   spread(Night, Act_per_hr)
-# 
-# # Make all NA's = 0
-# Table[is.na(Table)] <- 0
-# 
-# Table2 <- Table %>% 
-#   remove_rownames %>% 
-#   column_to_rownames(var="Spp")
-# 
-# 
-# results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
-# 
-# panderOptions('table.split.table', 100)
-# panderOptions('round', 1)
-# 
-# pander(Table2, style = "multiline")
-
-```
 
 
 ##### Page Break
@@ -683,25 +542,25 @@ ggplot(Calls_perc, aes(x = Detector.ID, y = Percentage, fill = Spp)) +
 \newline 
 ```{r}
 Table <- All_data %>%
-  group_by(Spp, Month, Detector.ID) %>% 
+  group_by(Spp, Month, location_name) %>% 
   count() %>% 
   spread(Month, n) %>%
-  rename("Detector ID" = Detector.ID) %>%
-  rename("Species" = Spp)
+  rename("Detector ID" = location_name) %>%
+  rename("species" = Spp)
 
 # Make all NA's = 0
 Table[is.na(Table)] <- 0
 
 # Table2 <- Table %>% 
 #   remove_rownames %>% 
-#   column_to_rownames(var="Species")
+#   column_to_rownames(var="species")
 
 
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
 
 panderOptions('table.split.table', 100)
 
-pander(Table, style = "multiline", justify = c("left", "centre", "centre", "centre", "centre"))
+pander(Table, style = "multiline", justify = "left")
 
 ```
 
@@ -719,14 +578,14 @@ Bat pass rates are often highly variable between nights, with some nights having
 
 ```{r}
 Table <- All_data %>%
-  group_by(Spp, Detector.ID, Month, Night) %>% 
+  group_by(Spp, location_name, Month, Night) %>% 
   count()
 
 Table2 <- Table %>%
-  group_by(Spp, Month, Detector.ID) %>%
+  group_by(Spp, Month, location_name) %>%
   summarise(Median = median(n)) %>%
   spread(Month, Median) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
+  rename("species" = Spp, "Detector ID" = location_name)
 
 
 
@@ -763,11 +622,11 @@ knitr::kable(Table2)
 
 
 Table <- All_data %>%
-  group_by(Month, Detector.ID) %>%
+  group_by(Month, location_name) %>%
   summarise(count = n_distinct(Night)) %>%
-  arrange(Month, Detector.ID) %>%
+  arrange(Month, location_name) %>%
   rename("No of Survey Nights" = count) %>%
-  rename("Detector ID" = Detector.ID)
+  rename("Detector ID" = location_name)
 
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
 
@@ -780,20 +639,20 @@ knitr::kable(Table, align = "lc")
 ```{r}
 
 Table <- All_data %>%
-  group_by(Spp, Month, Detector.ID) %>% 
+  group_by(Spp, Month, location_name) %>% 
   count() %>%
-  mutate(new = paste(Month, Detector.ID, sep = " "))
+  mutate(new = paste(Month, location_name, sep = " "))
 
 Table2 <- All_data %>%
-  group_by(Month, Detector.ID) %>%
+  group_by(Month, location_name) %>%
   summarise(count = n_distinct(Night)) %>%
-  mutate(new = paste(Month, Detector.ID, sep = " "))
+  mutate(new = paste(Month, location_name, sep = " "))
 
 Table3 <- left_join(Table, Table2, by = "new") %>%
   mutate("Effort" = round((n/count), digits = 1)) %>%
-  select(Month.x, Spp, Detector.ID.x, Effort) %>%
+  select(Month.x, Spp, location_name.x, Effort) %>%
   spread(Month.x, Effort) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID.x) %>%
+  rename("species" = Spp, "Detector ID" = location_name.x) %>%
   replace(is.na(.), 0)
 
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
@@ -813,7 +672,7 @@ Figures show boxplots for the number of bat passes by detector each month. The '
 ```{r, fig.width=10, fig.height=8}
 
 Night_month <- All_data %>%
-  group_by(Spp, Night, Month, Detector.ID) %>% 
+  group_by(Spp, Night, Month, location_name) %>% 
   count() 
 
 
@@ -823,8 +682,8 @@ for (i in unique(All_data$Spp)) {
   filter(Spp == i)
   
   print(new %>%
-  ggplot(aes(Month, n, fill=Detector.ID)) +
-  geom_boxplot(aes(fill=Detector.ID)) +
+  ggplot(aes(Month, n, fill=location_name)) +
+  geom_boxplot(aes(fill=location_name)) +
   scale_fill_brewer(palette = "RdBu") +
   ylab("Bat passes per night\n") +
   xlab("\nMonth") +
@@ -837,7 +696,7 @@ for (i in unique(All_data$Spp)) {
   {if (max(new$n) > 200 & max(new$n) <=300)ylim(-1,300)} +
   {if (max(new$n) > 300 & max(new$n) <=500)ylim(-1,500)} +
   {if (max(new$n) > 500 & max(new$n) <=1000)ylim(-1,1000)} +
-  geom_text(aes(y=(min(n)-1), x=Month, label=Detector.ID, group=Detector.ID),
+  geom_text(aes(y=(min(n)-1), x=Month, label=location_name, group=location_name),
             position=position_dodge(0.8), size=4) +
   theme_bw() +
   theme (axis.title.y = element_text(colour="black", size=18,
@@ -868,28 +727,6 @@ for (i in unique(All_data$Spp)) {
 
 
 
-`r if("Bat_time" %in% colnames(All_data) == TRUE) {'##### Page Break\n## Time (Seconds) Bat Present\n **Calculated from...**\n\n'}`
-
-```{r}
-
-if("Bat_time" %in% colnames(All_data) == TRUE) {
-
-Table <- All_data %>%
-  group_by(Night, Spp) %>%
-  summarise(total_act = sum(Bat_time)) %>%
-  spread(Night, total_act)
-
-# Make all NA's = ""
-Table[is.na(Table)] <- 0
-
-# simple table with 1 decimal point
-knitr::kable(Table, digits = 1)
-
-}
-
-```
-
-
 ##### Page Break
 
 # Distribution of Bat Passes Across Hours of the Night
@@ -903,11 +740,11 @@ knitr::kable(Table, digits = 1)
 ```{r}
 
 Table <- All_data %>%
-  group_by(Spp, Detector.ID, post_set_hr_int) %>% 
+  group_by(Spp, location_name, post_set_hr_int) %>% 
   count() %>% 
   spread(post_set_hr_int, n) %>%
   replace(is.na(.), 0) %>%
-  rename("Species" = Spp, "Detector ID" = Detector.ID)
+  rename("species" = Spp, "Detector ID" = location_name)
 
 
 # simple table
@@ -957,7 +794,7 @@ print(All_data %>%
   theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
                                    colour = "black")) +
   theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  facet_wrap(Detector.ID~.) +
+  facet_wrap(location_name~.) +
   ggtitle(i) +
   theme(plot.title = element_text(face = "bold.italic", size = 18)))
  
@@ -979,7 +816,7 @@ print(All_data %>%
 ```{r, fig.width=12, fig.height=8}
 
 Table <- All_data %>%
-  group_by(Spp, Detector.ID, post_set_hr_int) %>% 
+  group_by(Spp, location_name, post_set_hr_int) %>% 
   count() %>% 
   spread(post_set_hr_int, n) %>%
   replace(is.na(.), 0)
@@ -988,8 +825,8 @@ Table2 <- melt(Table)
 
 Table3 <- Table2 %>%
   rename(ss_hr = variable, Passes = value) %>%
-  arrange(Spp, Detector.ID, ss_hr) %>%
-  group_by(Spp, Detector.ID) %>%
+  arrange(Spp, location_name, ss_hr) %>%
+  group_by(Spp, location_name) %>%
   mutate(cs = cumsum(Passes))
 
 
@@ -1010,7 +847,7 @@ for (i in (unique(All_data$Spp))) {
         theme(strip.text.x = element_text(size=22, face="bold")) +
         theme(axis.text.x = element_text(size=20, colour = "black")) +
         theme(axis.text.y = element_text(size = 20, colour = "black")) +
-        facet_wrap(~Detector.ID) +
+        facet_wrap(~location_name) +
         ggtitle(i) +
         theme(plot.title = element_text(face = "bold.italic", size = 22))
 )
@@ -1031,18 +868,18 @@ for (i in (unique(All_data$Spp))) {
 ```{r, fig.width=10, fig.height=8}
 
 Detectors <- All_data %>%
-  group_by(Detector.ID, Latitude, Longitude) %>%
+  group_by(location_name, lat, lon) %>%
   count()
   
 
 Detectors %>% 
-  ggplot(aes(x=Longitude, y=Latitude)) +
-  geom_point(aes(x=Longitude, y=Latitude), fill = "black", colour = "white") +
-    geom_text(aes(x=Longitude, y=Latitude, label=Detector.ID), size=10) +
-    xlab("\nLongitude") +
-    ylab("Latitude\n") +
-    xlim((min(Detectors$Longitude) - 0.001), (max(Detectors$Longitude) + 0.001)) +
-    ylim((min(Detectors$Latitude) - 0.002), (max(Detectors$Latitude) + 0.002)) +
+  ggplot(aes(x=lon, y=lat)) +
+  geom_point(aes(x=lon, y=lat), fill = "black", colour = "white") +
+    geom_text(aes(x=lon, y=lat, label=location_name), size=10) +
+    xlab("\nlon") +
+    ylab("lat\n") +
+    xlim((min(Detectors$lon) - 0.001), (max(Detectors$lon) + 0.001)) +
+    ylim((min(Detectors$lat) - 0.002), (max(Detectors$lat) + 0.002)) +
     guides(fill ="legend") +
     theme_bw() +
     theme (legend.position = "right") +
@@ -1070,25 +907,25 @@ Detectors %>%
 ```{r, fig.width=10, fig.height=8}
 
 Table <- All_data %>%
-  group_by(Spp, Detector.ID, Night, Latitude, Longitude) %>% 
+  group_by(Spp, location_name, Night, lat, lon) %>% 
   count()
 
 Table2 <- Table %>%
-  group_by(Spp, Detector.ID, Latitude, Longitude) %>%
+  group_by(Spp, location_name, lat, lon) %>%
   summarise(Median = median(n))
 
 
 
 Table2 %>%
-    ggplot(aes(Longitude, Latitude)) +
-    geom_point(aes(x = Longitude, y = Latitude, size= Median, fill = Median),
+    ggplot(aes(lon, lat)) +
+    geom_point(aes(x = lon, y = lat, size= Median, fill = Median),
                colour = "black", pch = 21, position = position_jitter()) +
     scale_size_area(max_size = 10) +
     scale_fill_gradient(low = "yellow", high = "red") +
-    xlab("\nLongitude") +
-    ylab("Latitude\n") +
-    xlim((min(Table$Longitude) - 0.001), (max(Table$Longitude) + 0.001)) +
-    ylim((min(Table$Latitude) - 0.002), (max(Table$Latitude) + 0.002)) +
+    xlab("\nlon") +
+    ylab("lat\n") +
+    xlim((min(Table$lon) - 0.001), (max(Table$lon) + 0.001)) +
+    ylim((min(Table$lat) - 0.002), (max(Table$lat) + 0.002)) +
     guides(fill ="legend") +
     theme_bw() +
     theme (legend.position = "right") +
@@ -1117,32 +954,32 @@ Table2 %>%
 ```{r, fig.width=10, fig.height=8}
 
 # Table <- All_data %>%
-#   group_by(Spp, Detector.ID, Night, Latitude, Longitude) %>% 
+#   group_by(Spp, location_name, Night, lat, lon) %>% 
 #   count() %>%
 #   ungroup() %>%
-#   group_by(Spp, Detector.ID, Latitude, Longitude) %>%
+#   group_by(Spp, location_name, lat, lon) %>%
 #   filter(n == max(n))
 
 
 Table2 <- All_data %>%
-  group_by(Spp, Detector.ID, Night, Latitude, Longitude) %>% 
+  group_by(Spp, location_name, Night, lat, lon) %>% 
   count() %>%
   ungroup() %>%
-  group_by(Spp, Detector.ID, Latitude, Longitude) %>%
+  group_by(Spp, location_name, lat, lon) %>%
   top_n(1) %>%
   filter(row_number()==1)
 
 Table2 %>%
-    ggplot(aes(Longitude, Latitude)) +
-    geom_point(aes(x = Longitude, y = Latitude, size=n, fill = n),
+    ggplot(aes(lon, lat)) +
+    geom_point(aes(x = lon, y = lat, size=n, fill = n),
                colour = "black", pch = 21, position = position_jitter()) +
     scale_size_area(max_size = 10) +
     scale_fill_gradient(low = "yellow", high = "red") +
    # borders(reg="UK", colour = "white", fill="#7f7f7f", alpha=1/4) +
-    xlab("\nLongitude") +
-    ylab("Latitude\n") +
-    xlim((min(Table$Longitude) - 0.001), (max(Table$Longitude) + 0.001)) +
-    ylim((min(Table$Latitude) - 0.002), (max(Table$Latitude) + 0.002)) +
+    xlab("\nlon") +
+    ylab("lat\n") +
+    xlim((min(Table$lon) - 0.001), (max(Table$lon) + 0.001)) +
+    ylim((min(Table$lat) - 0.002), (max(Table$lat) + 0.002)) +
     guides(fill ="legend") +
     theme_bw() +
     theme (legend.position = "right") +
@@ -1168,7 +1005,7 @@ Table2 %>%
 
 # Roost Emergence Time and Bat Observation
 
-Based on: _Russ, Jon. 2012. British Bat Calls a Guide to Species Identification._ 
+Based on: _Russ, Jon. 2012. British Bat Calls a Guide to species Identification._ 
 _Pelagic Publishing._
 
 For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
@@ -1184,12 +1021,12 @@ For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 ```{r}
 Table <- All_data %>% 
   filter(post_set_min <= upper) %>% 
-  group_by(Night, Spp, Detector.ID) %>% 
+  group_by(Night, Spp, location_name) %>% 
   count() %>% 
   spread(Night, n) %>%
-  arrange(Spp, Detector.ID) %>%
-  rename("Detector ID" = Detector.ID) %>%
-  rename("Species" = Spp)
+  arrange(Spp, location_name) %>%
+  rename("Detector ID" = location_name) %>%
+  rename("species" = Spp)
 
 # Make all NA's = 0
 Table[is.na(Table)] <- 0
@@ -1202,14 +1039,14 @@ knitr::kable(Table)
 
 ### Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures
 
-**Figures show time from 15 minutes before to 90 minutes after sunset. Species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
+**Figures show time from 15 minutes before to 90 minutes after sunset. species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
 
 \newline  \newline
 
 ```{r fig.width=22, fig.height=15}
 
 
-for (i in seq_len(length(unique(All_data$Detector.ID)))) {
+for (i in seq_len(length(unique(All_data$location_name)))) {
   
 print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
     geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
@@ -1241,7 +1078,7 @@ print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
         panel.grid.major.y = element_blank(), 
         panel.grid.minor.y = element_blank()) +
   theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~Detector.ID, ncol=1, nrow=1, page=i))
+  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
 }
 
 
@@ -1272,12 +1109,12 @@ if((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_dat
   Maternity <- All_data %>% 
   filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
   filter(post_set_min <= upper) %>% 
-  group_by(Night, Spp, Detector.ID) %>% 
+  group_by(Night, Spp, location_name) %>% 
   count() %>% 
   spread(Night, n) %>%
-  arrange(Spp, Detector.ID) %>%
-  rename("Detector ID" = Detector.ID) %>%
-  rename("Species" = Spp) %>%
+  arrange(Spp, location_name) %>%
+  rename("Detector ID" = location_name) %>%
+  rename("species" = Spp) %>%
   replace(is.na(.), 0) 
 }
 
@@ -1289,18 +1126,6 @@ if(nrow(Maternity) > 0) {
 `r if (nrow(Maternity) == 0) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}`
 
 
-```{r}
-
-# if(nrow(Maternity) > 0) {
-#   knitr::kable(Maternity) 
-# } else {
-#     ("No records near a roost during maternity period")
-#   }
-
-
-```
-
-
 `r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figures:** *Maternity period defined as 15th June - 30th July.*' }`
 
 ```{r fig.width=22, fig.height=15}
@@ -1308,7 +1133,7 @@ if(nrow(Maternity) > 0) {
 
 if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
   
-for (i in seq_len(length(unique(All_data$Detector.ID)))) {
+for (i in seq_len(length(unique(All_data$location_name)))) {
   
  print(All_data %>%
     filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
@@ -1342,7 +1167,7 @@ for (i in seq_len(length(unique(All_data$Detector.ID)))) {
         panel.grid.major.y = element_blank(), 
         panel.grid.minor.y = element_blank()) +
   theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~Detector.ID, ncol=1, nrow=1, page=i))
+  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
 }
 
 }
