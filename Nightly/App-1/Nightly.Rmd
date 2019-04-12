@@ -41,7 +41,7 @@ library(plyr)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/deleteafter.csv")
 #B_data <- read.csv("./test_data.csv")
 
 
@@ -77,6 +77,11 @@ B_data$timestamp <- paste(B_data$date, B_data$time) }
   
 #Make Time Zone Local
 B_data$DateTime <- lubridate::ymd_hms(B_data$timestamp, tz = "Europe/London")
+
+if (NA %in% B_data$DateTime) {
+  B_data$DateTime <- lubridate::dmy_hms(B_data$timestamp, tz = "Europe/London")
+}
+  
 
 # change any instances of spec. to spp. in the species column
 #B_data$species <- stringr::str_replace(B_data$species, "spec.", "spp." )
@@ -371,7 +376,7 @@ Effort %>%
   geom_segment(aes(x=start, xend=end, y=location_name, yend=location_name), size = 6) +
   xlab("\nDate") +
   ylab("Detector ID\n") +
-  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  scale_x_date(date_labels = "%b %d") +
   theme_bw() +
   theme(legend.position = "none") +
   theme (axis.title.y = element_text(colour="black", size=16,
@@ -2789,7 +2794,7 @@ Table2 <- Table %>%
 Table2 %>%
     ggplot(aes(lon, lat)) +
     geom_point(aes(x = lon, y = lat, size= Median, fill = Median),
-               colour = "black", pch = 21, position = position_jitter()) +
+               colour = "black", pch = 21) +
     scale_size_area(max_size = 10) +
     scale_fill_gradient(low = "yellow", high = "red") +
     xlab("\nlon") +
@@ -2842,7 +2847,7 @@ Table2 <- All_data %>%
 Table2 %>%
     ggplot(aes(lon, lat)) +
     geom_point(aes(x = lon, y = lat, size=n, fill = n),
-               colour = "black", pch = 21, position = position_jitter()) +
+               colour = "black", pch = 21) +
     scale_size_area(max_size = 10) +
     scale_fill_gradient(low = "yellow", high = "red") +
    # borders(reg="UK", colour = "white", fill="#7f7f7f", alpha=1/4) +
@@ -2973,76 +2978,79 @@ All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format 
 `r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
 
 ```{r}
-
-if((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
-  
-  Maternity <- All_data %>% 
-  dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
-  dplyr::filter(post_set_min <= upper) %>% 
-  dplyr::group_by(Night, Spp, location_name) %>% 
-  dplyr::count() %>% 
-  spread(Night, n) %>%
-  dplyr::arrange(Spp, location_name) %>%
-  dplyr::rename("Detector ID" = location_name) %>%
-  dplyr::rename("species" = Spp) %>%
-  replace(is.na(.), 0) 
-}
-
-if(nrow(Maternity) > 0) {
-  knitr::kable(Maternity) 
-}
-  
-```
-`r if (nrow(Maternity) == 0) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}`
-
-
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figures:** *Maternity period defined as 15th June - 30th July.*' }`
-
-```{r fig.width=22, fig.height=15}
-
-
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
-  
-for (i in seq_len(length(unique(All_data$location_name)))) {
-  
- print(All_data %>%
-    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
-    ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
-    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
-                 size = 25, colour="grey") +
-  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
-  xlab("\nTime after sunset (mins)") +
-  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
-                     limits = c(-15, 90)) +
-  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
-             colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
-  scale_colour_brewer(palette = "Paired") +
-  theme_bw() +
-  theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
-  theme(strip.text.x = element_text(size=34, face="bold")) +
-  theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
-                                     face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
-                                   colour = "black",
-                                   face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
-                                   face = "bold")) +
-  theme(panel.background = element_rect(fill = "white")) +
-  theme(panel.grid.major.x = element_line(colour = "black",
-                                          linetype = "dotted"), 
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(), 
-        panel.grid.minor.y = element_blank()) +
-  theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
-}
-
-}
-
-
-```
+# 
+# #if((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+#   
+#   Maternity <- All_data %>% 
+#   dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
+#   dplyr::filter(post_set_min <= upper) %>% 
+#   dplyr::group_by(Night, Spp, location_name) %>% 
+#   dplyr::count() %>% 
+#   spread(Night, n) %>%
+#   dplyr::arrange(Spp, location_name) %>%
+#   dplyr::rename("Detector ID" = location_name) %>%
+#   dplyr::rename("species" = Spp) %>%
+#   replace(is.na(.), 0) 
+#   
+# if(nrow(Maternity) > 1) {
+#   knitr::kable(Maternity) 
+# }  
+#   
+# 
+# 
+# 
+#   
+# ```
+# `r if (nrow(Maternity) == 0) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}`
+# 
+# 
+# `r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figures:** *Maternity period defined as 15th June - 30th July.*' }`
+# 
+# ```{r fig.width=22, fig.height=15}
+# 
+# 
+# if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+#   
+# for (i in seq_len(length(unique(All_data$location_name)))) {
+#   
+#  print(All_data %>%
+#     dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
+#     ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
+#     geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
+#                  size = 25, colour="grey") +
+#   geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
+#   xlab("\nTime after sunset (mins)") +
+#   scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
+#                      limits = c(-15, 90)) +
+#   geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
+#              colour = "black", linetype = "dotted") +
+#   scale_y_discrete(drop=TRUE) +
+#   scale_colour_brewer(palette = "Paired") +
+#   theme_bw() +
+#   theme(legend.position = "none") +
+#   theme(plot.caption = element_text(colour = "black", size = 34)) +
+#   theme(strip.text.x = element_text(size=34, face="bold")) +
+#   theme(axis.title.y = element_blank()) +
+#   theme(axis.title.x = element_text(colour = "black", size = 34,
+#                                      face = "bold")) +
+#   theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+#                                    colour = "black",
+#                                    face = "bold")) +
+#   theme(axis.text.y = element_text(size = 28, colour = "black",
+#                                    face = "bold")) +
+#   theme(panel.background = element_rect(fill = "white")) +
+#   theme(panel.grid.major.x = element_line(colour = "black",
+#                                           linetype = "dotted"), 
+#         panel.grid.minor.x = element_blank(),
+#         panel.grid.major.y = element_blank(), 
+#         panel.grid.minor.y = element_blank()) +
+#   theme (axis.ticks = element_blank()) +
+#   facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
+# }
+# 
+# }
+# 
+# 
+# ```
 
 
