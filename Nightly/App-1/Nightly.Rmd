@@ -41,7 +41,7 @@ library(plyr)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/deleteafter.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
 #B_data <- read.csv("./test_data.csv")
 
 
@@ -2557,9 +2557,9 @@ for (i in unique(All_data$Spp)) {
   dplyr::filter(Spp == i)
   
   print(new %>%
-  ggplot(aes(Month, n, fill=location_name)) +
+  ggplot2::ggplot(aes(Month, n, fill=location_name)) +
   geom_boxplot(aes(fill=location_name)) +
-  scale_fill_brewer(palette = "RdBu") +
+{if (length(unique(new$location_name))>1)scale_fill_brewer(palette = "RdBu")}+
   ylab("Bat passes per night\n") +
   xlab("\nMonth") +
   {if (max(new$n) <=5)ylim(-0.5,5)} +  
@@ -2696,7 +2696,7 @@ Table <- All_data %>%
   spread(post_set_hr_int, n) %>%
   replace(is.na(.), 0)
 
-Table2 <- melt(Table)
+Table2 <- reshape2::melt(Table, id.vars = c("Spp", "location_name"))
 
 Table3 <- Table2 %>%
   dplyr::rename(ss_hr = variable, Passes = value) %>%

@@ -28,7 +28,7 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/data.csv")
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/per night CSV.csv")
 ```
 
 ```{r}
@@ -38,9 +38,7 @@ df <- params$n
 ```
 
 ```{r}
-#date<-as.Date(df$date) #for date graphs later, convert date column into date objects
-#date<-format(date, format="%d/%m/%Y") #formats dates
-date<-as.Date(df$date) #for date graphs later, convert date column into date objects
+df$date <- lubridate::dmy(df$date, tz = "Europe/London")
 
 cnames <- names(df)
 cnames[grepl('location_name$', cnames)] <- 'location_name'
