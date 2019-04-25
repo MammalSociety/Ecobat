@@ -402,33 +402,6 @@ Effort %>%
   theme(legend.title=element_text(size=16))
 
 
-### new code ####
-
-# Nights <- as.data.frame(nightlist)
-# 
-# Nights <- Nights %>%
-#   dplyr::rename("Night" = nightlist)
-# 
-# Effort2 <- All_data %>%
-#   dplyr::arrange(location_name, Night) %>%
-#   dplyr::group_by(location_name, Night) %>%
-#   dplyr::filter(row_number()==1) %>%
-#   dplyr::ungroup() %>%
-#   dplyr::select(location_name, Night)
-# 
-# tester <- dplyr::left_join(Nights, Effort2, by = "Night")
-# 
-# tester2 <- tester %>%
-#   dplyr::mutate(consec = ifelse(location_name == "", 0, 1)) %>%
-#   replace(is.na(.), 0)
-# 
-# 
-# plot.test <- tester2 %>%
-#   ggplot() +
-#   geom_point(aes(Night, location_name))
-# 
-# plot.test
-
 
 ```
 
@@ -440,17 +413,21 @@ Effort %>%
 
 
 # count up passes per night
-df2 <- All_data %>%
-  dplyr::group_by(location_name, Night, Spp) %>%
-  dplyr::summarise(Passes = sum(passes))
+# df2 <- All_data %>%
+#   dplyr::select(location_name, Night, Spp, passes) 
+# 
+# df3 <- dplyr::full_join(df2, All_data, by = c("location_name", "Night", "Spp"))
 
-df3 <- dplyr::full_join(df2, All_data, by = c("location_name", "Night", "Spp"))
-
-df <- df3 %>%
+df <- All_data %>%
   dplyr::group_by(location_name, Night, Spp) %>%
   dplyr::top_n(1) %>%
-  dplyr::filter(row_number()==1) %>%
-  dplyr::select(-passes, -time)
+  filter(row_number()==1) %>%
+  dplyr::select(-time)
+
+
+# add a column for bat passes per hour
+df$passes.per.hour <- df$passes/df$night_length_hr
+
 
 
 
@@ -2333,16 +2310,12 @@ knitr::kable(Table, align = "cccc")
 
 # Aggregate data into species and count
 
-  Table <- All_data %>%
+Table <- df %>%
   dplyr::group_by(Spp) %>% 
-  dplyr::count() %>% 
-  dplyr::arrange(Spp) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(Percentage = round((n / sum(n) *100), digits = 1)) %>%
+  dplyr::summarise(passes = sum(passes)) %>%
+  dplyr::mutate(Percentage = round((passes / sum(passes) *100), digits = 1)) %>%
   adorn_totals("row")
 
-
-  
 
 #Change column Names so more meaningful  
 colnames(Table) <- c("species", "Count (No)", "Percentage of total (%)")
@@ -2361,33 +2334,19 @@ knitr::kable(Table, align = "llll")
 
 # Aggregate data into species and count
 
-
-# TO CREATE A SEPARATE TABLE FOR EACH LOCATION:
-
-# for (i in Dets) {
-# 
-#   print(All_data %>%
-#   filter(location_name == i) %>%
-#   group_by(species, location_name) %>% 
-#   count() %>% 
-#   arrange(desc(n)) %>%
-#   ungroup() %>%
-#   mutate(Percentage = n / sum(n) *100 ) %>%
-#   rename(Location = location_name))
-#   }
-
 if(length(Dets) >1) {
 
 
 # TO CREATE A TABLE WITH LOCATION AS A COLUMN
-  Table <- All_data %>%
-  dplyr::group_by(Spp, location_name) %>% 
-  dplyr::count() %>% 
-  dplyr::arrange(Spp, location_name) %>%
+Table <- df %>%
+  dplyr::select(Spp, location_name, passes) %>%
+  dplyr::group_by(Spp, location_name) %>%
+  dplyr::summarise(n = sum(passes)) %>%
   dplyr::ungroup() %>%
   dplyr::group_by(location_name) %>%
   dplyr::mutate(Percentage = round((n / sum(n) *100), digits = 1)) 
-  
+
+
 #Change column Names so more meaningful  
 colnames(Table) <- c("species", "Detector ID", "Count (No)", "Percentage by Detector (%)")
 
@@ -2407,13 +2366,14 @@ knitr::kable(Table, align = 'lccc')
 
 # stacked bar plot for proportion of calls by species for each detector
 
-  Calls_perc <- All_data %>%
-  dplyr::group_by(Spp, location_name) %>% 
-  dplyr::count() %>% 
-  dplyr::arrange(location_name, desc(Spp)) %>%
+Calls_perc <- df %>%
+  dplyr::select(Spp, location_name, passes) %>%
+  dplyr::group_by(Spp, location_name) %>%
+  dplyr::summarise(n = sum(passes)) %>%
   dplyr::ungroup() %>%
   dplyr::group_by(location_name) %>%
   dplyr::mutate(Percentage = round((n / sum(n) *100), digits = 1))
+
 
 ggplot(Calls_perc, aes(x = location_name, y = Percentage, fill = Spp)) +
   geom_bar(stat = "identity") +
@@ -2452,12 +2412,14 @@ ggplot(Calls_perc, aes(x = location_name, y = Percentage, fill = Spp)) +
 
 \newline 
 ```{r}
-Table <- All_data %>%
-  dplyr::group_by(Spp, Month, location_name) %>% 
-  dplyr::count() %>% 
+
+Table <- df %>%
+  dplyr::group_by(Spp, Month, location_name) %>%
+  dplyr::summarise(n = sum(passes)) %>%
   spread(Month, n) %>%
   dplyr::rename("Detector ID" = location_name) %>%
   dplyr::rename("species" = Spp)
+
 
 # Make all NA's = 0
 Table[is.na(Table)] <- 0
@@ -2488,21 +2450,20 @@ Bat pass rates are often highly variable between nights, with some nights having
 \newline  \newline
 
 ```{r}
-Table <- All_data %>%
-  dplyr::group_by(Spp, location_name, Month, Night) %>% 
-  dplyr::count()
 
-Table2 <- Table %>%
+Table <- df %>%
+  dplyr::group_by(Spp, location_name, Month, Night) %>%
+  dplyr::summarise(n = sum(passes)) %>%
+  dplyr::ungroup() %>%
   dplyr::group_by(Spp, Month, location_name) %>%
   dplyr::summarise(Median = median(n)) %>%
   spread(Month, Median) %>%
   dplyr::rename("species" = Spp, "Detector ID" = location_name)
 
-
-
+  
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
 
-knitr::kable(Table2)
+knitr::kable(Table)
 
 ```
 
@@ -2521,16 +2482,6 @@ knitr::kable(Table2)
 
 ```{r}
 
-# print(paste("The number of survey nights per month is as folows:"))
-# 
-# for (i in (unique(All_data$Month))) { 
-#     Survs <- All_data %>%
-#     filter(Month == i) %>%
-#     summarise(Surveys = n_distinct(Night)) %>%
-#     mutate(Month = i)
-#     print(paste(Survs$Month, "-", Survs$Surveys, "nights"))
-#   }
-
 
 Table <- All_data %>%
   dplyr::group_by(Month, location_name) %>%
@@ -2546,6 +2497,8 @@ knitr::kable(Table, align = "lc")
 ```
 
 ##### Page Break
+
+# Mean per Detector
 
 ```{r}
 
@@ -2563,7 +2516,7 @@ Table3 <- left_join(Table, Table2, by = "new") %>%
   dplyr::mutate("Effort" = round((n/count), digits = 1)) %>%
   dplyr::select(Month.x, Spp, location_name.x, Effort) %>%
   spread(Month.x, Effort) %>%
-  dplyr::rename("species" = Spp, "Detector ID" = location_name.x) %>%
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name.x) %>%
   replace(is.na(.), 0)
 
 results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
@@ -2582,9 +2535,9 @@ Figures show boxplots for the number of bat passes by detector each month. The '
 
 ```{r, fig.width=10, fig.height=8}
 
-Night_month <- All_data %>%
-  dplyr::group_by(Spp, Night, Month, location_name) %>% 
-  dplyr::count() 
+Night_month <- df %>%
+  dplyr::group_by(Spp, Night, Month, location_name) %>%
+  dplyr::summarise(n = sum(passes))
 
 
 for (i in unique(All_data$Spp)) {
@@ -2598,16 +2551,16 @@ for (i in unique(All_data$Spp)) {
 {if (length(unique(new$location_name))>1)scale_fill_brewer(palette = "RdBu")}+
   ylab("Bat passes per night\n") +
   xlab("\nMonth") +
-  {if (max(new$n) <=5)ylim(-0.5,5)} +  
-  {if (max(new$n) > 5 & max(new$n) <=10)ylim(-1,10)} +
-  {if (max(new$n) > 10 & max(new$n) <=20)ylim(-1,20)} +
-  {if (max(new$n) > 20 & max(new$n) <=50)ylim(-1,50)} +  
-  {if (max(new$n) > 50 & max(new$n) <=100)ylim(-1,100)} +
-  {if (max(new$n) > 100 & max(new$n) <=200)ylim(-1,200)} +
-  {if (max(new$n) > 200 & max(new$n) <=300)ylim(-1,300)} +
-  {if (max(new$n) > 300 & max(new$n) <=500)ylim(-1,500)} +
-  {if (max(new$n) > 500 & max(new$n) <=1000)ylim(-1,1000)} +
-  geom_text(aes(y=(min(n)-1), x=Month, label=location_name, group=location_name),
+  {if (max(new$n) <=5)ylim(-3,5)} +  
+  {if (max(new$n) > 5 & max(new$n) <=10)ylim(-3,10)} +
+  {if (max(new$n) > 10 & max(new$n) <=20)ylim(-3,20)} +
+  {if (max(new$n) > 20 & max(new$n) <=50)ylim(-3,50)} +  
+  {if (max(new$n) > 50 & max(new$n) <=100)ylim(-3,100)} +
+  {if (max(new$n) > 100 & max(new$n) <=200)ylim(-3,200)} +
+  {if (max(new$n) > 200 & max(new$n) <=300)ylim(-3,300)} +
+  {if (max(new$n) > 300 & max(new$n) <=500)ylim(-3,500)} +
+  {if (max(new$n) > 500 & max(new$n) <=1000)ylim(-3,1000)} +
+  geom_text(aes(y=-2, x=Month, label=location_name, group=location_name),
             position=position_dodge(0.8), size=4) +
   theme_bw() +
   theme (axis.title.y = element_text(colour="black", size=18,
@@ -2626,10 +2579,6 @@ for (i in unique(All_data$Spp)) {
   theme(plot.title = element_text(face = "bold.italic", size = 22)) +
   theme(legend.position="none"))
   
-  # guides(fill=guide_legend(title="Detector ID")) +
-  # theme(legend.text=element_text(size=18)) +
-  # theme(legend.title=element_text(size=20)))
-  #       
 }
 
 ```
@@ -2650,13 +2599,12 @@ for (i in unique(All_data$Spp)) {
 ###### Hours After Sunset
 ```{r}
 
-Table <- All_data %>%
-  dplyr::group_by(Spp, location_name, post_set_hr_int) %>% 
-  dplyr::count() %>% 
+Table <- df %>%
+  dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
+  dplyr::summarise(n = sum(passes)) %>%
   spread(post_set_hr_int, n) %>%
   replace(is.na(.), 0) %>%
-  dplyr::rename("species" = Spp, "Detector ID" = location_name)
-
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name)
 
 # simple table
 knitr::kable(Table)
@@ -2724,9 +2672,9 @@ print(All_data %>%
 \newline  \newline
 ```{r, fig.width=12, fig.height=8}
 
-Table <- All_data %>%
-  dplyr::group_by(Spp, location_name, post_set_hr_int) %>% 
-  dplyr::count() %>% 
+Table <- df %>%
+  dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
+  dplyr::summarise(n = sum(passes)) %>%
   spread(post_set_hr_int, n) %>%
   replace(is.na(.), 0)
 
@@ -2737,6 +2685,8 @@ Table3 <- Table2 %>%
   dplyr::arrange(Spp, location_name, ss_hr) %>%
   dplyr::group_by(Spp, location_name) %>%
   dplyr::mutate(cs = cumsum(Passes))
+
+
 
 
 for (i in (unique(All_data$Spp))) {
@@ -2776,9 +2726,9 @@ for (i in (unique(All_data$Spp))) {
 
 ```{r, fig.width=10, fig.height=8}
 
-Detectors <- All_data %>%
+Detectors <- df %>%
   dplyr::group_by(location_name, lat, lon) %>%
-  dplyr::count()
+  dplyr::summarise(n = sum(passes))
   
 
 Detectors %>% 
@@ -2815,9 +2765,9 @@ Detectors %>%
   
 ```{r, fig.width=10, fig.height=8}
 
-Table <- All_data %>%
-  dplyr::group_by(Spp, location_name, Night, lat, lon) %>% 
-  dplyr::count()
+Table <- df %>%
+  dplyr::group_by(Spp, location_name, Night, lat, lon) %>%
+  dplyr::summarise(n = sum(passes))
 
 Table2 <- Table %>%
   dplyr::group_by(Spp, location_name, lat, lon) %>%
@@ -2862,17 +2812,10 @@ Table2 %>%
 
 ```{r, fig.width=10, fig.height=8}
 
-# Table <- All_data %>%
-#   group_by(Spp, location_name, Night, lat, lon) %>% 
-#   count() %>%
-#   ungroup() %>%
-#   group_by(Spp, location_name, lat, lon) %>%
-#   filter(n == max(n))
 
-
-Table2 <- All_data %>%
+Table2 <- df %>%
   dplyr::group_by(Spp, location_name, Night, lat, lon) %>% 
-  dplyr::count() %>%
+  dplyr::summarise(n = sum(passes)) %>%
   dplyr::ungroup() %>%
   dplyr::group_by(Spp, location_name, lat, lon) %>%
   dplyr::top_n(1) %>%
@@ -2928,10 +2871,10 @@ For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 
 \newline  \newline
 ```{r}
-Table <- All_data %>% 
+Table <- df %>% 
   dplyr::filter(post_set_min <= upper) %>% 
   dplyr::group_by(Night, Spp, location_name) %>% 
-  dplyr::count() %>% 
+  dplyr::summarise(n = sum(passes)) %>%
   spread(Night, n) %>%
   dplyr::arrange(Spp, location_name) %>%
   dplyr::rename("Detector ID" = location_name) %>%
