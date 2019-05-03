@@ -28,7 +28,7 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/per night CSV.csv")
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (4).csv")
 ```
 
 ```{r}
@@ -102,6 +102,8 @@ recordsum <- ddply(df, c("sref", "species"), summarise, #summarise to produce a 
                    surv = length(species))
 #now merge this back into the original csv - we don't want to delete any files at this stage
 wp<- merge(df, recordsum, c("sref","species")) #merge with original dataset - adds surv column onto end of dataset
+
+wp$date <- as.Date(wp$date)
 
 
 # old code if only using species recorded on >= 5 nights
@@ -505,7 +507,7 @@ if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn=="1"
 ## date ~ percentile graph if 1 location, >1 species
 #if less than 21 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn>1) {
+if((difftime(max(wp$date),min(wp$date), units='days') <= 21) & loc=="1" & spn>1){
   
   for (i in seq_len(n_pages1)) {
   

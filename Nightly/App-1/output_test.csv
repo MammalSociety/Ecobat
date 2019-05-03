@@ -1,0 +1,14 @@
+lat,lon,location_name,Night,Spp,passes,passes.per.hour,percentile,activity_level,site_name,Month,lower,upper
+55.017283,-6.81975,d10,09/07/2018,Leisler's,7,1.01,73,medium/high,Rigged Hill,Jul,8,18
+55.017283,-6.81975,d10,09/07/2018,Soprano pipistrelle,1,0.14,0,low,Rigged Hill,Jul,22,28
+55.017283,-6.81975,d10,09/07/2018,Common pipistrelle,10,1.42,80,high,Rigged Hill,Jul,8,18
+55.017283,-6.81975,d10,10/07/2018,Common pipistrelle,3,0.42,51,medium,Rigged Hill,Jul,22,32
+55.017283,-6.81975,d10,10/07/2018,Leisler's,11,1.56,82,high,Rigged Hill,Jul,8,18
+55.017283,-6.81975,d10,10/07/2018,Soprano pipistrelle,1,0.14,0,low,Rigged Hill,Jul,22,28
+55.0269,-6.821783,d6,09/07/2018,Leisler's,2,0.28,31,low/medium,Rigged Hill,Jul,8,18
+55.0269,-6.821783,d6,09/07/2018,Soprano pipistrelle,2,0.28,31,low/medium,Rigged Hill,Jul,8,18
+55.0269,-6.821783,d6,09/07/2018,Common pipistrelle,7,0.96,73,medium/high,Rigged Hill,Jul,22,32
+55.0269,-6.821783,d6,10/07/2018,Common pipistrelle,22,3.02,89,high,Rigged Hill,Jul,8,18
+55.0269,-6.821783,d6,10/07/2018,Leisler's,22,3,89,high,Rigged Hill,Jul,8,18
+55.0269,-6.821783,d6,10/07/2018,Soprano pipistrelle,1,0.13,0,low,Rigged Hill,Jul,18,28
+55.0269,-6.821783,d6,10/07/2018,Nathusius',27,3.56,93,high,Rigged Hill,Jul,22,32
