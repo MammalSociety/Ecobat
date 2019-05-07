@@ -2255,17 +2255,42 @@ if(windsum>0 & loc>=5 & spn>1) {
 ```{r infer zeros}
 
 df_spr <- df %>%
-  dplyr::select(location_name, Night, Spp, passes.per.hour) %>%
+  dplyr::select(location_name, lat, lon, Night, Spp, passes.per.hour) %>%
   spread(Spp, passes.per.hour)
 
 df_gath <- df_spr %>%
-  gather("Spp", "passes.per.hour", 3:(length(Spp_list)+2)) %>%
+  gather("Spp", "passes.per.hour", 5:(length(Spp_list)+4)) %>%
   replace(is.na(.), 0) %>%
   arrange(location_name, Night, Spp)
 
-df_z <- right_join(df, df_gath, by = c("location_name", "Night", "Spp",
-                                       "passes.per.hour")) %>%
-  arrange(location_name, Night, Spp)
+
+df_z <- df_gath %>%
+  mutate(Month = lubridate::month(Night, label = T)) 
+
+df_z2 <- dplyr::left_join(df_z, russ, by = "Spp")
+
+df_passes <- df %>%
+  select(Spp, Night, location_name, passes)
+
+df_z3 <- dplyr::left_join(df_z2, df_passes, by = c("Night", "location_name",
+                                                       "Spp")) 
+
+df_zero <- df_z3 %>%
+  replace(is.na(.), 0)
+
+df_zero$Month <- as.character(df_zero$Month)
+
+
+# df_spr_a <- df %>%
+#   dplyr::select(-date, -species_tvk, -species, -passes, -percentile,
+#                 -activity_level, -timestamp, -DateTime, -sunset, -sunrise,
+#                 -night_length_min, -night_length_hr, -post_set_min,
+#                 -post_set_hr, -pre_rise_min, -pre_rise_hr, -post_set_hr_int,
+#                 -pre_rise_hr_int)
+
+ # df_test <- right_join(df, df_gath, by = c("location_name", "Night", "Spp",
+ #                                        "passes.per.hour")) %>%
+ #   arrange(location_name, Night, Spp)
 
 
 ```
@@ -2291,6 +2316,334 @@ colnames(Table) <- c("Night (y-m-d)", "Sunset (hh:mm)", "Sunrise (hh:mm)", "Nigh
 knitr::kable(Table, align = "cccc")
 
 ```
+
+
+```{r post_set_hr}
+
+
+# ##### Page Break
+# 
+# # Distribution of Bat Passes Across Hours of the Night
+# ## All Detectors
+# 
+# **The total number of bat passes occuring during each hour after sunset.**
+# 
+# \newline  \newline
+
+# ###### Hours After Sunset
+# Table <- df %>%
+#   dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
+#   dplyr::summarise(n = sum(passes)) %>%
+#   spread(post_set_hr_int, n) %>%
+#   replace(is.na(.), 0) %>%
+#   dplyr::rename("Species" = Spp, "Detector ID" = location_name)
+# 
+# # simple table
+# knitr::kable(Table)
+
+
+```
+
+##### Page Break
+
+# Distribution of Bat Activity Across the Night through Time
+## Per Detector
+
+**Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. Colours indicate kernel densities, with darkest colours showing peaks of activity. These colours are comparative only within each plot, and do not account for overall activity.**
+
+
+```{r, fig.width=10, fig.height=8}
+
+
+for (i in unique(All_data$Spp)) {
+
+print(All_data %>%
+      dplyr::filter(Spp == i) %>%
+        
+  ggplot(aes(Night, post_set_min)) +
+  stat_density2d(aes(alpha = ..level.., fill =..level..), geom="polygon") + 
+  scale_fill_gradient(low = "yellow", high = "red") +
+  geom_point(size=2, alpha = 0.5) +
+  geom_line(data = sun_data, aes(Night, night_length_min),
+            linetype = "dashed", colour = "red") +
+  xlab("\nDate") + 
+  ylab("Minutes after sunset\n") +
+  theme_bw() +
+  theme (legend.position = "none") +
+  theme (axis.title.y = element_text(colour="black", size=18,
+                                     face="bold")) +
+  theme (axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+  theme(strip.text.x = element_text(size=18, face="bold")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+  theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+  theme(axis.text.y = element_text(size = 16, colour = "black")) +
+  facet_wrap(location_name~.) +
+  ggtitle(i) +
+  theme(plot.title = element_text(face = "bold.italic", size = 18)))
+ 
+}
+
+
+#position = position_jitter(w = 1, h = 0)) +
+
+```
+
+
+```{r, fig.width=12, fig.height=8}
+
+
+
+# ##### Page Break
+# 
+# # Distribution of Bat Passes Across Hours of the Night
+# ## All Detectors
+# 
+# **Cumulative number of bat passes throughout the night.**
+# 
+# \newline  \newline
+
+
+# Table <- df %>%
+#   dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
+#   dplyr::summarise(n = sum(passes)) %>%
+#   spread(post_set_hr_int, n) %>%
+#   replace(is.na(.), 0)
+# 
+# Table2 <- reshape2::melt(Table, id.vars = c("Spp", "location_name"))
+# 
+# Table3 <- Table2 %>%
+#   dplyr::rename(ss_hr = variable, Passes = value) %>%
+#   dplyr::arrange(Spp, location_name, ss_hr) %>%
+#   dplyr::group_by(Spp, location_name) %>%
+#   dplyr::mutate(cs = cumsum(Passes))
+# 
+# 
+# 
+# 
+# for (i in (unique(All_data$Spp))) {
+#   print(Table3 %>%
+#         dplyr::filter(Spp == i) %>%
+#         ggplot(aes(x = ss_hr, y = cs, group =1)) +
+#         geom_point() +
+#         geom_line() +
+#         xlab("\nHours after Sunset") +
+#         ylab("Total number of passes\n") +
+#         scale_color_brewer(palette = "RdBu") +
+#         theme_bw() +
+#         theme (axis.title.y = element_text(colour="black", size=22,
+#                                      face="bold")) +
+#         theme (axis.title.x = element_text(colour="black", size=22,
+#                                      face="bold")) +
+#         theme(strip.text.x = element_text(size=22, face="bold")) +
+#         theme(axis.text.x = element_text(size=20, colour = "black")) +
+#         theme(axis.text.y = element_text(size = 20, colour = "black")) +
+#         facet_wrap(~location_name) +
+#         ggtitle(i) +
+#         theme(plot.title = element_text(face = "bold.italic", size = 22))
+# )
+# }
+# 
+
+
+```
+
+
+
+
+##### Page Break
+
+# Roost Emergence Time and Bat Observation
+
+Based on: _Russ, Jon. 2012. British Bat Calls a Guide to species Identification._ 
+_Pelagic Publishing._
+
+For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
+
+\newline  \newline
+
+
+## Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table
+
+**Number of bat calls recorded within the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
+
+\newline  \newline
+```{r}
+Table <- df %>% 
+  dplyr::filter(post_set_min <= upper) %>% 
+  dplyr::group_by(Night, Spp, location_name) %>% 
+  dplyr::summarise(n = sum(passes)) %>%
+  spread(Night, n) %>%
+  dplyr::arrange(Spp, location_name) %>%
+  dplyr::rename("Detector ID" = location_name) %>%
+  dplyr::rename("Species" = Spp)
+
+# Make all NA's = 0
+Table[is.na(Table)] <- 0
+
+# simple table
+
+    results='asis' 
+    panderOptions('table.split.table', 100)
+    pander(Table, style = "multiline", justify = "left")
+
+```
+
+##### Page Break
+
+### Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures
+
+**Figures show time from 15 minutes before to 90 minutes after sunset. species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
+
+\newline  \newline
+
+```{r fig.width=22, fig.height=15}
+
+
+for (i in seq_len(length(unique(All_data$location_name)))) {
+  
+print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
+    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
+                 size = 25, colour="grey") +
+  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
+  xlab("\nTime after sunset (mins)") +
+  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
+                     limits = c(-15, 90)) +
+  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
+             colour = "black", linetype = "dotted") +
+  scale_y_discrete(drop=TRUE) +
+  scale_colour_brewer(palette = "Paired") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme(plot.caption = element_text(colour = "black", size = 34)) +
+  theme(strip.text.x = element_text(size=34, face="bold")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_text(colour = "black", size = 34,
+                                     face = "bold")) +
+  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+                                   colour = "black",
+                                   face = "bold")) +
+  theme(axis.text.y = element_text(size = 28, colour = "black",
+                                   face = "bold")) +
+  theme(panel.background = element_rect(fill = "white")) +
+  theme(panel.grid.major.x = element_line(colour = "black",
+                                          linetype = "dotted"), 
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank()) +
+  theme (axis.ticks = element_blank()) +
+  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
+}
+
+
+```
+
+
+```{r}
+
+# adding a column for Day-Month to be used to see if maternity period is included or not
+
+sun_data$month <- lubridate::month(sun_data$Night, label = TRUE)
+sun_data$nday <- lubridate::day(sun_data$Night)
+sun_data$Day <- paste(sun_data$nday, sun_data$month, sep = "-")
+
+
+# also add this to All_data - WILL ADD CURRENT YEAR AS YEAR SO NEEDS CHANGING IN GGPLOT CODE BELOW AT THE TURN OF EACH NEW YEAR
+All_data$month <- lubridate::month(All_data$Night)
+All_data$nday <- lubridate::day(All_data$Night)
+All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format = "%d-%m")
+
+```
+
+`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
+
+```{r}
+
+if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+
+  Maternity <- All_data %>%
+  dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
+  dplyr::filter(post_set_min <= upper) %>%
+  dplyr::group_by(Night, Spp, location_name) %>%
+  dplyr::count() %>%
+  spread(Night, n) %>%
+  dplyr::arrange(Spp, location_name) %>%
+  dplyr::rename("Detector ID" = location_name) %>%
+  dplyr::rename("Species" = Spp) %>%
+  replace(is.na(.), 0)
+  
+}
+
+if (exists("Maternity") == TRUE){
+  if (nrow(Maternity) > 1) {
+ 
+    results='asis' 
+    panderOptions('table.split.table', 100)
+    pander(Maternity, style = "multiline", justify = "left")
+  
+  }
+}
+
+
+
+```
+`r if (exists("Maternity") == TRUE) {if (nrow(Maternity) == 0) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}}`
+
+`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figures:** *Maternity period defined as 15th June - 30th July.*' }`
+
+```{r fig.width=22, fig.height=15}
+
+
+if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+
+for (i in seq_len(length(unique(All_data$location_name)))) {
+
+ print(All_data %>%
+    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
+    ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
+    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
+                 size = 25, colour="grey") +
+  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
+  xlab("\nTime after sunset (mins)") +
+  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
+                     limits = c(-15, 90)) +
+  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
+             colour = "black", linetype = "dotted") +
+  scale_y_discrete(drop=TRUE) +
+  scale_colour_brewer(palette = "Paired") +
+  theme_bw() +
+  theme(legend.position = "none") +
+  theme(plot.caption = element_text(colour = "black", size = 34)) +
+  theme(strip.text.x = element_text(size=34, face="bold")) +
+  theme(axis.title.y = element_blank()) +
+  theme(axis.title.x = element_text(colour = "black", size = 34,
+                                     face = "bold")) +
+  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+                                   colour = "black",
+                                   face = "bold")) +
+  theme(axis.text.y = element_text(size = 28, colour = "black",
+                                   face = "bold")) +
+  theme(panel.background = element_rect(fill = "white")) +
+  theme(panel.grid.major.x = element_line(colour = "black",
+                                          linetype = "dotted"),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) +
+  theme (axis.ticks = element_blank()) +
+  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
+}
+
+}
+
+
+```
+
+
 
 ##### Page Break
 
@@ -2395,6 +2748,16 @@ ggplot(Calls_perc, aes(x = location_name, y = Percentage, fill = Spp)) +
 ```
 
 ##### Page Break
+
+## **PART 2a: Presence Only**
+
+\newline
+
+**THE NEXT SECTION OF THE REPORT FEATURES THE RAW DATA SUPPLIED TO ECOBAT AND ONLY TAKES INTO ACCOUNT THE PRESENCE, AND NOT THE ABSENCE, OF EACH BAT SPECIES. FOR EACH NIGHT, THERE IS NO 'ZERO DATA' FOR WHEN SPECIES WERE NOT DETECTED.**
+
+
+##### Page Break
+
 
 ## Nightly Bat Pass Rate (Bat passes per hour)
 # Median Per Detector
@@ -2661,138 +3024,6 @@ for (i in unique(df$Spp)) {
 
 ```
 
-
-##### Page Break
-
-# Distribution of Bat Passes Across Hours of the Night
-## All Detectors
-
-**The total number of bat passes occuring during each hour after sunset.**
-
-\newline  \newline
-
-###### Hours After Sunset
-```{r}
-
-Table <- df %>%
-  dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
-  dplyr::summarise(n = sum(passes)) %>%
-  spread(post_set_hr_int, n) %>%
-  replace(is.na(.), 0) %>%
-  dplyr::rename("Species" = Spp, "Detector ID" = location_name)
-
-# simple table
-knitr::kable(Table)
-
-
-```
-
-##### Page Break
-
-# Distribution of Bat Activity Across the Night through Time
-## Per Detector
-
-**Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. Colours indicate kernel densities, with darkest colours showing peaks of activity. These colours are comparative only within each plot, and do not account for overall activity.**
-
-
-```{r, fig.width=10, fig.height=8}
-
-
-for (i in unique(All_data$Spp)) {
-
-print(All_data %>%
-      dplyr::filter(Spp == i) %>%
-        
-  ggplot(aes(Night, post_set_min)) +
-  stat_density2d(aes(alpha = ..level.., fill =..level..), geom="polygon") + 
-  scale_fill_gradient(low = "yellow", high = "red") +
-  geom_point(size=2, alpha = 0.5) +
-  geom_line(data = sun_data, aes(Night, night_length_min),
-            linetype = "dashed", colour = "red") +
-  xlab("\nDate") + 
-  ylab("Minutes after sunset\n") +
-  theme_bw() +
-  theme (legend.position = "none") +
-  theme (axis.title.y = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme (axis.title.x = element_text(colour="black", size=18,
-                                     face="bold")) +
-  theme(strip.text.x = element_text(size=18, face="bold")) +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour="black", linetype="solid"),
-        axis.line=element_line(size=0.5, colour="black",
-                               linetype="solid")) +
-  theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
-                                   colour = "black")) +
-  theme(axis.text.y = element_text(size = 16, colour = "black")) +
-  facet_wrap(location_name~.) +
-  ggtitle(i) +
-  theme(plot.title = element_text(face = "bold.italic", size = 18)))
- 
-}
-
-
-#position = position_jitter(w = 1, h = 0)) +
-
-```
-
-##### Page Break
-
-# Distribution of Bat Passes Across Hours of the Night
-## All Detectors
-
-**Cumulative number of bat passes throughout the night.**
-
-\newline  \newline
-```{r, fig.width=12, fig.height=8}
-
-Table <- df %>%
-  dplyr::group_by(Spp, location_name, post_set_hr_int) %>%
-  dplyr::summarise(n = sum(passes)) %>%
-  spread(post_set_hr_int, n) %>%
-  replace(is.na(.), 0)
-
-Table2 <- reshape2::melt(Table, id.vars = c("Spp", "location_name"))
-
-Table3 <- Table2 %>%
-  dplyr::rename(ss_hr = variable, Passes = value) %>%
-  dplyr::arrange(Spp, location_name, ss_hr) %>%
-  dplyr::group_by(Spp, location_name) %>%
-  dplyr::mutate(cs = cumsum(Passes))
-
-
-
-
-for (i in (unique(All_data$Spp))) {
-  print(Table3 %>%
-        dplyr::filter(Spp == i) %>%
-        ggplot(aes(x = ss_hr, y = cs, group =1)) +
-        geom_point() +
-        geom_line() +
-        xlab("\nHours after Sunset") +
-        ylab("Total number of passes\n") +
-        scale_color_brewer(palette = "RdBu") +
-        theme_bw() +
-        theme (axis.title.y = element_text(colour="black", size=22,
-                                     face="bold")) +
-        theme (axis.title.x = element_text(colour="black", size=22,
-                                     face="bold")) +
-        theme(strip.text.x = element_text(size=22, face="bold")) +
-        theme(axis.text.x = element_text(size=20, colour = "black")) +
-        theme(axis.text.y = element_text(size = 20, colour = "black")) +
-        facet_wrap(~location_name) +
-        ggtitle(i) +
-        theme(plot.title = element_text(face = "bold.italic", size = 22))
-)
-}
-
-
-
-```
-
-
-
 ##### Page Break
 
 # Bat Activity per Detector Location
@@ -2927,188 +3158,377 @@ Table %>%
 
 ##### Page Break
 
-# Roost Emergence Time and Bat Observation
 
-Based on: _Russ, Jon. 2012. British Bat Calls a Guide to species Identification._ 
-_Pelagic Publishing._
+## **PART 2B: Includes absences**
 
-For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
+\newline
+
+**THE NEXT SECTION OF THE REPORT FEATURES THE DATA SUPPLIED TO ECOBAT BUT TAKES INTO ACCOUNT SPECIES ABSENCES, AND THEREFORE INCLUDES 'ZERO DATA' FOR WHEN SPECIES WERE NOT DETECTED AT EACH DETECTOR ON A NIGHT. THIS DRAMATICALLY LOWERS THE MEANS AND MEDIANS OF THE DATA PRESENTED.**
+
+
+##### Page Break
+
+
+## Nightly Bat Pass Rate (Bat passes per hour)
+# Median Per Detector
+
+**The median Nightly Pass Rate (bat passes per hour, per night) of each species. If NA, then no bat passes.**
+
+Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
 \newline  \newline
 
-
-## Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table
-
-**Number of bat calls recorded within the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
-
-\newline  \newline
 ```{r}
-Table <- df %>% 
-  dplyr::filter(post_set_min <= upper) %>% 
-  dplyr::group_by(Night, Spp, location_name) %>% 
-  dplyr::summarise(n = sum(passes)) %>%
-  spread(Night, n) %>%
-  dplyr::arrange(Spp, location_name) %>%
-  dplyr::rename("Detector ID" = location_name) %>%
-  dplyr::rename("Species" = Spp)
 
-# Make all NA's = 0
-Table[is.na(Table)] <- 0
+Table <- df_zero %>%
+  dplyr::group_by(Spp, location_name) %>%
+  dplyr::summarise(Median = round(median(passes.per.hour), digits = 1)) %>%
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name, 
+                "Median Pass Rate" = Median)
 
-# simple table
+  
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
 
-    results='asis' 
-    panderOptions('table.split.table', 100)
-    pander(Table, style = "multiline", justify = "left")
+knitr::kable(Table, align="l")
 
 ```
 
 ##### Page Break
 
-### Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures
+## Nightly Bat Pass Rate (Bat passes per hour)
+# Mean per Detector
 
-**Figures show time from 15 minutes before to 90 minutes after sunset. species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
+**The mean Nightly Pass Rate (bat passes per hour, per night) of each species at each detector. Values are given to 1 decimal place.**
+
+\newline
+
+We recommend using the median values given above, for the reasons stated above, but provide the mean values in the table below.
+
+
+```{r}
+
+Table <- df_zero %>%
+  dplyr::group_by(Spp, location_name) %>%
+  dplyr::summarise(Mean = round(mean(passes.per.hour), digits = 1)) %>%
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name,
+                "Mean Pass Rate" = Mean)
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+knitr::kable(Table, align="l")
+
+```
+
+##### Page Break
+
+# Nightly Bat Passes (Bat passes per hour)
+## Per Detector - Figures
+
+Figures show boxplots for the number of bat passes per hour each night, for each detector. The 'box' shows the interquartile range, which is where the middle 50% of the data lie. The line dividing the box is the median, the mid-point of the data. The 'whiskers' extend from the box and represent the ranges for the bottom 25% and the top 25% of the data values, excluding outliers. An outlier is any extreme value that lies further away from the box than 1.5 times the interquartile range. Outliers are shown as dots. Where very few passes are recorded it is not possible to produce the box, so the data are shown as a line.
+
+```{r, fig.width=6, fig.height=5}
+
+for (i in unique(df$Spp)) {
+  
+  new <- df_zero %>%
+  dplyr::filter(Spp == i)
+  
+  print(new %>%
+  ggplot2::ggplot(aes(location_name, passes.per.hour)) +
+  geom_boxplot(aes(fill=location_name)) +
+  ylab("Nightly Pass Rate (passes/hr/night)\n") +
+  xlab("\nDetector ID") +
+  {if (length(unique(new$location_name))>1)scale_fill_brewer(palette = "RdBu")} +
+  {if (max(new$n) > 0 & max(new$n) <=1)ylim(0,2)} +
+  {if (max(new$n) > 1 & max(new$n) <=2)ylim(0,3.0)} +
+  {if (max(new$n) > 2 & max(new$n) <=5)ylim(0,6)} +  
+  {if (max(new$n) > 5 & max(new$n) <=10)ylim(0,11)} +
+  {if (max(new$n) > 10 & max(new$n) <=20)ylim(0,22)} +
+  {if (max(new$n) > 20 & max(new$n) <=50)ylim(0,55)} +
+  {if (max(new$n) > 50 & max(new$n) <=100)ylim(0,110)} +
+  {if (max(new$n) > 100 & max(new$n) <=200)ylim(0,220)} +
+  theme_bw() +
+  theme (axis.title.y = element_text(colour="black", size=16,
+                                     face="bold")) +
+  theme (axis.title.x = element_text(colour="black", size=16,
+                                     face="bold")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+  theme(axis.text.x = element_text(angle = 90, size=14, hjust=0.5, vjust=1,
+                                   colour = "black")) +
+  theme(axis.text.y = element_text(size = 14, colour = "black")) +
+  ggtitle(i) +
+  theme(plot.title = element_text(face = "bold.italic", size = 20)) +
+  theme(legend.position="none"))
+  
+}
+
+```
+
+
+
+##### Page Break
+
+# Survey Effort
+**The number of survey nights per month per detector.**
+
+```{r}
+
+
+Table <- All_data %>%
+  dplyr::group_by(Month, location_name) %>%
+  dplyr::summarise(count = n_distinct(Night)) %>%
+  dplyr::arrange(Month, location_name) %>%
+  dplyr::rename("No of Survey Nights" = count) %>%
+  dplyr::rename("Detector ID" = location_name)
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+knitr::kable(Table, align = "lc")
+
+```
+
+##### Page Break
+
+## Nightly Bat Pass Rate for each Month 
+# Median Per Detector
+
+**The median Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. If NA, then no bat passes.**
+
+Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
 \newline  \newline
 
-```{r fig.width=22, fig.height=15}
+```{r}
 
 
-for (i in seq_len(length(unique(All_data$location_name)))) {
+Table <- df_zero %>%
+  dplyr::group_by(Spp, Month, location_name) %>%
+  dplyr::summarise(Median = round(median(passes.per.hour), digits = 1)) %>%
+  spread(Month, Median) %>%
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name)
+
   
-print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
-    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
-                 size = 25, colour="grey") +
-  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
-  xlab("\nTime after sunset (mins)") +
-  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
-                     limits = c(-15, 90)) +
-  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
-             colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
-  scale_colour_brewer(palette = "Paired") +
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+knitr::kable(Table)
+
+```
+
+##### Page Break
+
+## Nightly Bat Pass Rate for each Month 
+# Mean per Detector
+
+**The mean Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. Values are given to 1 decimal place.**
+
+\newline
+
+We recommend using the median values given above, for the reasons stated above, but provide the mean values in the table below.
+
+
+```{r}
+
+Table <- df_zero %>%
+  dplyr::group_by(Spp, Month, location_name) %>%
+  dplyr::summarise(Mean = round(mean(passes.per.hour), digits = 1)) %>%
+  spread(Month, Mean) %>%
+  dplyr::rename("Species" = Spp, "Detector ID" = location_name)
+
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+
+knitr::kable(Table, align="l")
+
+```
+
+
+
+##### Page Break
+
+## Nightly Bat Pass Rate for each Month 
+## Per Detector - Figures
+
+Figures show boxplots for the number of bat passes per hour by detector, for each month. The 'box' shows the interquartile range, which is where the middle 50% of the data lie. The line dividing the box is the median, the mid-point of the data. The 'whiskers' extend from the box and represent the ranges for the bottom 25% and the top 25% of the data values, excluding outliers. An outlier is any extreme value that lies further away from the box than 1.5 times the interquartile range. Outliers are shown as dots. Where very few passes are recorded it is not possible to produce the box, so the data are shown as a line.
+
+```{r, fig.width=10, fig.height=5}
+
+
+for (i in unique(df$Spp)) {
+  
+  new <- df_zero %>%
+  dplyr::filter(Spp == i)
+  
+  print(new %>%
+  ggplot2::ggplot(aes(location_name, passes.per.hour)) +
+  geom_boxplot(aes(fill=location_name)) +
+  ylab("Nightly Pass Rate (passes/hr/night)\n") +
+  xlab("\nDetector ID") +
+  {if (length(unique(new$location_name))>1)scale_fill_brewer(palette = "RdBu")} +
+  {if (max(new$n) > 0 & max(new$n) <=1)ylim(0,2)} +
+  {if (max(new$n) > 1 & max(new$n) <=2)ylim(0,3.0)} +
+  {if (max(new$n) > 2 & max(new$n) <=5)ylim(0,6)} +  
+  {if (max(new$n) > 5 & max(new$n) <=10)ylim(0,11)} +
+  {if (max(new$n) > 10 & max(new$n) <=20)ylim(0,22)} +
+  {if (max(new$n) > 20 & max(new$n) <=50)ylim(0,55)} +
+  {if (max(new$n) > 50 & max(new$n) <=100)ylim(0,110)} +
+  {if (max(new$n) > 100 & max(new$n) <=200)ylim(0,220)} +
   theme_bw() +
-  theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
-  theme(strip.text.x = element_text(size=34, face="bold")) +
-  theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
-                                     face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
-                                   colour = "black",
-                                   face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
-                                   face = "bold")) +
-  theme(panel.background = element_rect(fill = "white")) +
-  theme(panel.grid.major.x = element_line(colour = "black",
-                                          linetype = "dotted"), 
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(), 
-        panel.grid.minor.y = element_blank()) +
-  theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
-}
-
-
-```
-
-```{r}
-
-# adding a column for Day-Month to be used to see if maternity period is included or not
-
-sun_data$month <- lubridate::month(sun_data$Night, label = TRUE)
-sun_data$nday <- lubridate::day(sun_data$Night)
-sun_data$Day <- paste(sun_data$nday, sun_data$month, sep = "-")
-
-
-# also add this to All_data - WILL ADD CURRENT YEAR AS YEAR SO NEEDS CHANGING IN GGPLOT CODE BELOW AT THE TURN OF EACH NEW YEAR
-All_data$month <- lubridate::month(All_data$Night)
-All_data$nday <- lubridate::day(All_data$Night)
-All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format = "%d-%m")
-
-```
-
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
-
-```{r}
-
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
-
-  Maternity <- All_data %>%
-  dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
-  dplyr::filter(post_set_min <= upper) %>%
-  dplyr::group_by(Night, Spp, location_name) %>%
-  dplyr::count() %>%
-  spread(Night, n) %>%
-  dplyr::arrange(Spp, location_name) %>%
-  dplyr::rename("Detector ID" = location_name) %>%
-  dplyr::rename("Species" = Spp) %>%
-  replace(is.na(.), 0)
+  theme (axis.title.y = element_text(colour="black", size=16,
+                                     face="bold")) +
+  theme (axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+  theme(axis.text.x = element_text(angle = 90, size=16, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+  theme(axis.text.y = element_text(size = 14, colour = "black")) +
+  facet_wrap(~Month) +
+  theme(strip.text.x = element_text(size=16)) +
+  ggtitle(i) +
+  theme(plot.title = element_text(face = "bold.italic", size = 22)) +
+  theme(legend.position="none"))
   
 }
 
-if (exists("Maternity") == TRUE){
-  if (nrow(Maternity) > 1) {
+```
+
+
+##### Page Break
+
+# Bat Activity per Detector Location
+
+**Detector ID reference:**
+
+```{r, fig.width=10, fig.height=8}
+
+Detectors <- df_zero %>%
+  dplyr::group_by(location_name, lat, lon) %>%
+  dplyr::summarise(n = sum(passes))
+  
+
+Detectors %>% 
+  ggplot(aes(x=lon, y=lat)) +
+  geom_point(aes(x=lon, y=lat), fill = "black", colour = "white") +
+    geom_text(aes(x=lon, y=lat, label=location_name), size=10) +
+    xlab("\nlon") +
+    ylab("lat\n") +
+    xlim((min(Detectors$lon) - 0.001), (max(Detectors$lon) + 0.001)) +
+    ylim((min(Detectors$lat) - 0.002), (max(Detectors$lat) + 0.002)) +
+    guides(fill ="legend") +
+    theme_bw() +
+    theme (legend.position = "right") +
+    theme (axis.title.y = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme (axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme(strip.text.x = element_text(size=18, face="bold")) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+    theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+                                     
+                                   colour = "black")) +
+    theme(axis.text.y = element_text(size = 16, colour = "black"))
+
+```
+
+##### Page Break
+
+**Median Nightly Pass Rate (bat passes/hr/night) throughout the survey period - represented by the size and colour of the point at each detector location.**
+  
+```{r, fig.width=10, fig.height=8}
+
+Table <- df_zero %>%
+  dplyr::group_by(Spp, location_name, lat, lon) %>%
+  dplyr::summarise(Median = median(passes.per.hour)) %>%
+  dplyr::rename("Median.Pass.Rate" = Median)
+
+
+
+Table %>%
+    ggplot(aes(lon, lat)) +
+    geom_point(aes(x = lon, y = lat, size= Median.Pass.Rate,
+                   fill = Median.Pass.Rate),
+               colour = "black", pch = 21) +
+    scale_size_area(max_size = 10) +
+    scale_fill_gradient(low = "yellow", high = "red") +
+    xlab("\nLongitude") +
+    ylab("Latitude\n") +
+    xlim((min(Table$lon) - 0.001), (max(Table$lon) + 0.001)) +
+    ylim((min(Table$lat) - 0.002), (max(Table$lat) + 0.002)) +
+    guides(fill ="legend") +
+    theme_bw() +
+    theme (legend.position = "right") +
+    theme (axis.title.y = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme (axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme(strip.text.x = element_text(size=18, face="bold")) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+    theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+    theme(axis.text.y = element_text(size = 16, colour = "black")) +
+    facet_wrap(~Spp) 
+
  
-    results='asis' 
-    panderOptions('table.split.table', 100)
-    pander(Maternity, style = "multiline", justify = "left")
-  
-  }
-}
-
-
-
 ```
-`r if (exists("Maternity") == TRUE) {if (nrow(Maternity) == 0) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}}`
 
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figures:** *Maternity period defined as 15th June - 30th July.*' }`
+##### Page Break
 
-```{r fig.width=22, fig.height=15}
+**Maximum Nightly Pass Rate (bat passes/hr/night) recorded in a single night throughout the survey period - represented by the size and colour of the point at each detector location.**
 
-
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
-
-for (i in seq_len(length(unique(All_data$location_name)))) {
-
- print(All_data %>%
-    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
-    ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
-    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
-                 size = 25, colour="grey") +
-  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
-  xlab("\nTime after sunset (mins)") +
-  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
-                     limits = c(-15, 90)) +
-  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
-             colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
-  scale_colour_brewer(palette = "Paired") +
-  theme_bw() +
-  theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
-  theme(strip.text.x = element_text(size=34, face="bold")) +
-  theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
-                                     face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
-                                   colour = "black",
-                                   face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
-                                   face = "bold")) +
-  theme(panel.background = element_rect(fill = "white")) +
-  theme(panel.grid.major.x = element_line(colour = "black",
-                                          linetype = "dotted"),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()) +
-  theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
-}
-
-}
+```{r, fig.width=10, fig.height=8}
 
 
+Table <- df_zero %>%
+  dplyr::group_by(Spp, location_name, lat, lon) %>%
+  dplyr::arrange(passes.per.hour) %>%
+  dplyr::top_n(1, passes.per.hour) %>%
+  dplyr::filter(row_number()==1) %>%
+  dplyr::rename("Max.Pass.Rate" = passes.per.hour)
+
+Table %>%
+    ggplot(aes(lon, lat)) +
+    geom_point(aes(x = lon, y = lat, size=Max.Pass.Rate,
+                   fill = Max.Pass.Rate),
+               colour = "black", pch = 21) +
+    scale_size_area(max_size = 10) +
+    scale_fill_gradient(low = "yellow", high = "red") +
+    xlab("\nLongitude") +
+    ylab("Latitude\n") +
+    xlim((min(Table$lon) - 0.001), (max(Table$lon) + 0.001)) +
+    ylim((min(Table$lat) - 0.002), (max(Table$lat) + 0.002)) +
+    guides(fill ="legend") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    theme(axis.title.y = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme(axis.title.x = element_text(colour="black", size=18,
+                                     face="bold")) +
+    theme(strip.text.x = element_text(size=18, face="bold")) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour="black", linetype="solid"),
+          axis.line=element_line(size=0.5, colour="black",
+                               linetype="solid")) +
+    theme(axis.text.x = element_text(angle=90, size=16, hjust=1, vjust=0.5,
+                                   colour = "black")) +
+    theme(axis.text.y = element_text(size = 16, colour = "black")) +
+    facet_wrap(~Spp)
+
+ 
 ```
 
 
