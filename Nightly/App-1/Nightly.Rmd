@@ -40,7 +40,7 @@ library(grid)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (5).csv")
+B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
 #B_data <- read.csv("./test_data.csv")
 
 
@@ -52,7 +52,7 @@ library(grid)
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
 
-B_data <- params$n
+#B_data <- params$n
 
 ```
 
@@ -2599,46 +2599,46 @@ if (exists("Maternity") == TRUE){
 ```{r fig.width=22, fig.height=15}
 
 
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
-
-for (i in seq_len(length(unique(All_data$location_name)))) {
-
- print(All_data %>%
-    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
-    ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
-    geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
-                 size = 25, colour="grey") +
-  geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
-  xlab("\nTime after sunset (mins)") +
-  scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
-                     limits = c(-15, 90)) +
-  geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
-             colour = "black", linetype = "dotted") +
-  scale_y_discrete(drop=TRUE) +
-  scale_colour_brewer(palette = "Paired") +
-  theme_bw() +
-  theme(legend.position = "none") +
-  theme(plot.caption = element_text(colour = "black", size = 34)) +
-  theme(strip.text.x = element_text(size=34, face="bold")) +
-  theme(axis.title.y = element_blank()) +
-  theme(axis.title.x = element_text(colour = "black", size = 34,
-                                     face = "bold")) +
-  theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
-                                   colour = "black",
-                                   face = "bold")) +
-  theme(axis.text.y = element_text(size = 28, colour = "black",
-                                   face = "bold")) +
-  theme(panel.background = element_rect(fill = "white")) +
-  theme(panel.grid.major.x = element_line(colour = "black",
-                                          linetype = "dotted"),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()) +
-  theme (axis.ticks = element_blank()) +
-  facet_wrap_paginate(~location_name, ncol=1, nrow=1, page=i))
-}
-
-}
+# if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+# 
+# for (i in seq_len(length(unique(All_data$location_name)))) {
+# 
+#  print(All_data %>%
+#     dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
+#     ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
+#     geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
+#                  size = 25, colour="grey") +
+#   geom_point(size=5, alpha=0.7,  position = position_jitter(height = 0.3)) +
+#   xlab("\nTime after sunset (mins)") +
+#   scale_x_continuous(breaks=c(-15, 0, 15, 30, 45, 60, 75, 90),
+#                      limits = c(-15, 90)) +
+#   geom_hline(yintercept = c(seq_len(length(Spp_list)-1) + 0.5),
+#              colour = "black", linetype = "dotted") +
+#   scale_y_discrete(drop=TRUE) +
+#   scale_colour_brewer(palette = "Paired") +
+#   theme_bw() +
+#   theme(legend.position = "none") +
+#   theme(plot.caption = element_text(colour = "black", size = 34)) +
+#   theme(strip.text.x = element_text(size=34, face="bold")) +
+#   theme(axis.title.y = element_blank()) +
+#   theme(axis.title.x = element_text(colour = "black", size = 34,
+#                                      face = "bold")) +
+#   theme(axis.text.x = element_text(size = 28, hjust=0.5, vjust=1,
+#                                    colour = "black",
+#                                    face = "bold")) +
+#   theme(axis.text.y = element_text(size = 28, colour = "black",
+#                                    face = "bold")) +
+#   theme(panel.background = element_rect(fill = "white")) +
+#   theme(panel.grid.major.x = element_line(colour = "black",
+#                                           linetype = "dotted"),
+#         panel.grid.minor.x = element_blank(),
+#         panel.grid.major.y = element_blank(),
+#         panel.grid.minor.y = element_blank()) +
+#   theme (axis.ticks = element_blank()) +
+#   facet_wrap_paginate(~location_name, nrow=1, ncol=1, page=i))
+# }
+# 
+# }
 
 
 ```
