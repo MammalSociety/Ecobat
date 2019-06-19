@@ -28,7 +28,7 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-df1 <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
+#df1 <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
 
 ```
 
