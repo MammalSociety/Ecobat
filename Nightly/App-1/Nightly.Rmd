@@ -40,7 +40,7 @@ library(grid)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
 #B_data <- read.csv("./test_data.csv")
 
 
@@ -52,7 +52,7 @@ B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (1).csv")
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
 
-#B_data <- params$n
+B_data <- params$n
 
 ```
 
@@ -359,6 +359,7 @@ Effort <- All_data %>%
 
 Effort$start <- as.Date(Effort$start)
 Effort$end <- as.Date(Effort$end)
+Effort$location_name <- as.character(Effort$location_name)
 
 
 Effort %>%
@@ -402,6 +403,8 @@ df <- All_data %>%
   dplyr::top_n(1) %>%
   filter(row_number()==1) %>%
   dplyr::select(-time)
+
+df$location_name <- as.character(df$location_name)
 
 
 recordsum <- ddply(df, c("location_name", "Spp"), summarise, 
@@ -750,8 +753,8 @@ if(loc>10 & spn>"1") {graphboxc<-ggplot(df, aes(x=location_name, y=percentile))+
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
   geom_boxplot(df, mapping = aes(fill=location_name))+
-  xlab("Detector ID")+
-  ylab("Bat Activity Level (Percentile)")+
+  xlab("\nDetector ID")+
+  ylab("Bat Activity Level (Percentile)\n")+
   scale_fill_grey(start = 0.35, end = 1)+
   scale_x_discrete(drop=FALSE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
