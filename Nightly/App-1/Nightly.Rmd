@@ -416,12 +416,15 @@ wp <- merge(df, recordsum, c("location_name","Spp")) #merge with original datase
 
 spn<-length(unique(df$Spp))
 loc<-length(unique(df$location_name))
+locs<-length(unique(df$site_name))
 
 # for the dates graphs, when >1 loc & >1 spp
 n_pages <- ceiling(nrow(unique(df[,c("species", "location_name")]))/8)
 
 # when 1 loc & >1 spp
 n_pages1 <- ceiling(nrow(unique(df[,c("species", "location_name")]))/5)
+
+n_pages2 <- ceiling(nrow(unique(df[,c("species")]))/4)
 
 
 cbbPalette <- c("#D55E00", "#0072B2","#56B4E9","#009E73","#E69F00") #set colour palette for graphs
@@ -460,6 +463,8 @@ The reference range dataset was stratified to include:
 `r if("Titley Scientific" %in% df$detector_make_filter) {'* Only records using Titley Scientific bat detectors.  '}`
 
 `r if("Wildlife Acoustics" %in% df$detector_make_filter) {'* Only records using Wildlife Acoustics bat detectors.  '}`
+
+## PER DETECTOR
 
 #### Table 1
 
@@ -663,7 +668,7 @@ graphboxb}
 #endcode for boxplot
 ```
 
-`r if(loc>1 & spn>"1") {'**Figure 1.**\n Differences in bat activity between static detector locations. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
+`r if(loc>2 & loc<5 & spn>1) {'**Figure 1.**\n Differences in bat activity between static detector locations. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
 
 ```{r fig.width=9, fig.height=8}
 
@@ -744,7 +749,7 @@ graphboxc}
 
 ```{r fig.width=9, fig.height=8}
 
-#boxplot if more than 2 location and more than one species
+#boxplot if more than 10 locations and more than one species
 
 if(loc>10 & spn>"1") {graphboxc<-ggplot(df, aes(x=location_name, y=percentile))+ #add lines first
   geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
@@ -779,7 +784,7 @@ graphboxc}
 ```
 
 
-`r if(loc>10 & spn>"1") {'**Figure 1.**\n Differences in activity between static detector locations, split by species and location. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
+`r if(loc>10 & spn>1) {'**Figure 1.**\n Differences in activity between static detector locations, split by species and location. The centre line indicates the median activity level whereas the box represents the interquartile range (the spread of the middle 50% of nights of activity)  '}`
 
 
 ```{r fig.width=9, fig.height=8}
@@ -1775,288 +1780,211 @@ if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc>=5 & spn=="1
 
 `r if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
+## PER SITE
+
+#### Table 1
+
+Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r}
-#Code to work out median
-#This is not actually used at the moment but just leaving here in case needed in future
+library(plyr)
+actdata <- plyr::ddply(df, c("species"), summarise,
+                 Nights.high = sum(activity_level=="high"),
+                 Nights.modhigh = sum(activity_level=="medium/high"),
+                 Nights.mod = sum(activity_level=="medium"),
+                 Nights.lowmod = sum(activity_level=="low/medium"),
+                 Nights.low = sum(activity_level=="low"))
 
-med<-median(df$percentile)
-x       = df$percentile
-bootmed = apply(matrix(sample(x, rep=TRUE, 10^4*length(x)), nrow=10^4), 1, median)
-medci<- quantile(bootmed, c(.025, 0.975))
+#rename columns
+names(actdata)[names(actdata)=="species"] <- "Species/Species Group"
+names(actdata)[names(actdata)=="Nights.high"] <- "Nights of High Activity"
+names(actdata)[names(actdata)=="Nights.modhigh"] <- "Nights of Moderate/ High Activity"
+names(actdata)[names(actdata)=="Nights.mod"] <- "Nights of Moderate Activity"
+names(actdata)[names(actdata)=="Nights.lowmod"] <- "Nights of Low/ Moderate Activity"
+names(actdata)[names(actdata)=="Nights.low"] <- "Nights of Low Activity"                  
 
-medtemp<-median(df$temperature_c)
-
-##need to make a basic dataframe with median temperature, median percentile and
-#confidence intervals
-titles<-c("Percentile", "Temperature","a","b")
-combined<- c(med,medtemp,medci)
-dfa<-data.frame(titles, combined, stringsAsFactors = FALSE)
-dfb<-data.frame(titles, combined)
-library(tidyr)
-data_wide <- spread(dfb, titles, combined)
-
-#end median code
+library(knitr)
+results='asis'#important to run this as it ensures the raw table output isn't processed further by knitr
+datatable2<-actdata
+emphasize.italics.cols(2) #second column needs to be in italics i.e. species names
+panderOptions("table.split.table", Inf) #don't split table
+pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ```
 
+
+#### Table 2
+
+Summary table showing key metrics for each species recorded.
 ```{r}
-tempsum <- sum(df$temperature_c) #adds up all temperature values - can use this to determine if temperature data was entered
-if(is.na(tempsum)) tempsum <- 0
-windsum <- sum(df$wind_speed_mph) #adds up all windspeed values - can use this to determine if windspeed data was entered
-if(is.na(windsum)) windsum <- 0
+library(plyr)
+library(rcompanion)
+
+con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
+confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
+                          data       = con, 
+                          conf       = 0.95, 
+                          R          = 1000,
+                          wilcox =   TRUE, 
+                          bca        = FALSE, 
+                          digits     = 3)
+
+confint <- transform(confint, Wilcox.lower = ifelse(Wilcox.lower == "NaN", Median, Wilcox.lower))
+confint <- transform(confint, Wilcox.upper = ifelse(Wilcox.upper == "NaN", Median, Wilcox.upper))
+
+
+mm<-merge(con, confint) #merge with subsetted dataset to put columns with the confidence intervals on the end
+mm$confint = paste(mm$Wilcox.lower, mm$Wilcox.upper, sep=" - ") #add a new column with CIs merged
+
+non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+please<-rbind(mm, non) #join the two datasets back together
+
+library(plyr) #ddply as normal
+mdata2 <- plyr::ddply(please, c("species"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(1)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre'))
+
 ```
 
 
-```{r fig.width=9, fig.height=8}
-#code for the temperature graph with one location and more than one species
 
-if(tempsum > 0 & loc == "1" & spn > 1) {
-graphA<-ggplot(df, aes(x=temperature_c, y= percentile))+
-  geom_point(df, size=3, shape=1,
-             mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-  xlab(expression("Temperature "(degree*C)))+ #set x-axis
-  ylab("Bat Activity Level (Percentile)")+
-  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                      breaks=c("High","Moderate/High","Moderate",
-                               "Low/Moderate","Low")) +
-  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-  scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
-  theme_bw() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_rect(colour="black", linetype="solid"),
-        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-        axis.title.x=element_text(size=16),
-        axis.text.x  = element_text(size=16),
-        axis.text.y  = element_text(size=16),
-        axis.line.x = element_line(color="black", size = 0.5),
-        axis.line.y = element_line(color="black", size = 0.5),
-        axis.title.y=element_text(size=18))+
+###Figures
+
+```{r fig.width=9, fig.height=6}
+
+#boxplot if 1 location
+
+graphbox<-ggplot(df, aes(x=Spp, y=percentile))+ #add lines first
+  geom_hline(aes(yintercept=0), linetype="dashed", color="#000000") +
   geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(species ~ .) +
-  theme(strip.text.y = element_text(size=16, face="italic")) #species names in italics)
-graphA}
-
-#end code for temperature graph
-```
-
-`r if(tempsum>0 & loc=="1" & spn>1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by species.  '}`
-
-```{r fig.width=9, fig.height=8}
-#code for the temperature graph with location and one species
-
-if(tempsum>0 & loc=="1" & spn=="1") {
-graphA<-ggplot(df, aes(x=temperature_c, y= percentile))+
-  geom_point(df, size=3, shape=1,
-             mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-  xlab(expression("Temperature "(degree*C)))+ #set x-axis
+  geom_boxplot(df, mapping = aes(fill=species))+
+  xlab("Species")+
   ylab("Bat Activity Level (Percentile)")+
-  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                      breaks=c("High","Moderate/High","Moderate",
-                               "Low/Moderate","Low")) +
-  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-  scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
+  scale_fill_grey(start = 0.35, end = 1)+
+  scale_x_discrete(drop=FALSE) +
+  scale_y_continuous(breaks=seq(0,100,20)) +
+  expand_limits(y=c(0,100))+
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-        axis.title.x=element_text(size=16),
-        axis.text.x  = element_text(size=16),
-        axis.text.y  = element_text(size=16),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90, face="italic", size=14, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
-        axis.title.y=element_text(size=18))+
-  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-graphA}
+        axis.title.y=element_text(size=16),
+        legend.position="none")
+graphbox
 
-#end code for temperature graph
+#endcode for boxplot
 ```
 
-`r if(tempsum>0 & loc=="1" & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset.  '}`
+`r '**Figure 1.**\n The activity level (percentile) of bats recorded across each night of the bat survey for the entire site.  '`
 
-```{r fig.width=9, fig.height=10}
-#code for the temperature graph with more than one location and one species
 
-if(tempsum>0 & loc>1 & loc<5 & spn=="1") {
-  graphB<-ggplot(df, aes(x=temperature_c, y= percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-    xlab(expression("Temperature "(degree*C)))+ #set x-axis
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low")) +
-    scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-    scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=16),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=16),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18))+
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_grid(. ~ location_name) +
-    theme(strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphB}
+```{r median medians}
 
-#end code for temperature graph
+df$percentiles <- as.numeric(df$percentile)
+
+medians <- df %>%
+  dplyr::select(location_name, Night, Spp, percentiles,
+                activity_level, species) %>%
+  dplyr::group_by(Night, Spp) %>%
+  dplyr::mutate(med = median(percentiles)) %>%
+  dplyr::arrange(Night)
+
+
 ```
 
-`r if(tempsum>0 & loc>1 & loc<5 & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '}`
 
-```{r fig.width=9, fig.height=10}
-#code for the temperature graph
-#if more than one location and more than one species
+```{r fig.width=9, fig.height=8}
+## Night ~ med graph if 1 location, 1 species
+#if less than 21 days
 
-if(tempsum>0 & loc>1 & loc<5 & spn<1) {
-  graphB<-ggplot(df, aes(x=temperature_c, y= percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-    xlab(expression("Temperature "(degree*C)))+ #set x-axis
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low")) +
-    scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-    scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=16),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=16),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18))+
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_grid(species ~ location_name) +
-    theme(strip.text.y = element_text(size=16, face="italic"), #species names in italics
-          strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphB}
-
-#end code for temperature graph
-```
-
-`r if(tempsum>0 & loc>1 & loc<5 & spn<1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by species and location.  '}`
-
-```{r fig.width=9, fig.height=10}
-#code for the temperature graph
-#if more than 5 locations and one species
-
-if(tempsum>0 & loc>=5 & spn=="1") {
-  graphC<-ggplot(df, aes(x=temperature_c, y= percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-    xlab(expression("Temperature "(degree*C)))+ #set x-axis
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low")) +
-    scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-    scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=16),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=16),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18))+
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_wrap( ~ location_name, ncol=2) +
-    theme(strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphC}
-
-#end code for temperature graph
-```
-
-`r if(tempsum>0 & loc>=5 & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '}`
-
-```{r fig.width=9, fig.height=10}
-#code for the temperature graph
-#more than 5 locations and more than one species
-
-if(tempsum>0 & loc>=5 & spn>1) {
-  graphC<-ggplot(df, aes(x=temperature_c, y= percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=temperature_c, y= percentile, color=activity_level))+
-    xlab(expression("Temperature "(degree*C)))+ #set x-axis
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low")) +
-    scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-    scale_x_continuous(limit=c(6,18),breaks=seq(6,18,2))+
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=16),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=16),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18))+
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_wrap(species ~ location_name, ncol=2) +
-    theme(strip.text.y = element_text(size=16, face="italic"), #species names in italics
-          strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphC}
-
-#end code for temperature graph
-```
-
-`r if(tempsum>0 & loc>=5 & spn>1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by species and location.  '}`
-
-```{r fig.width=9, fig.height=10}
-#windspeed graph
-#if one location and more than one species
-if(windsum>0 & loc=="1" & spn>1) {
-graphwc<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
-  geom_point(df, size=3, shape=1,
-             mapping = aes(x=wind_speed_mph, y= percentile, color=activity_level))+
-  xlab("Windspeed at Sunset (mph)")+
-  ylab("Bat Activity Level (Percentile)")+
+if((difftime(max(medians$Night),min(medians$Night), units='days')<=21) & locs=="1" & spn=="1"){ graphD<-ggplot(medians, aes(x= Night, y= (median(med)))) +
+  geom_point(medians, size=3, shape=1,
+             mapping = aes(x=Night, y= med, color=activity_level))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
                       breaks=c("High","Moderate/High","Moderate",
                                "Low/Moderate","Low"))+
-  scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
+  scale_x_date(name = "Date", date_breaks = "3 days", date_labels = "%d %b %Y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(linetype="blank"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00")
+  graphD}
+
+##end code for Night graph
+```
+
+```{r fig.width=9, fig.height=8}
+## Night ~ med graph if 1 location, >1 species
+#if less than 21 days
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')<=21) & locs=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages2)) {
+  
+  print(ggplot(medians, aes(x= Night, y= med))+
+  geom_point(medians, size=3, shape=1, 
+             mapping = aes(x=Night, y= med, color=activity_level))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
+  scale_x_date(name = "Date", date_breaks = "3 days", date_labels = "%d %b %Y")+
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(colour="black", linetype="solid"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -2065,33 +1993,36 @@ graphwc<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-  facet_grid(. ~ species) +
-  theme(strip.text.x = element_text(size=16, face="italic"))
-graphwc}
+  facet_grid_paginate(species ~ ., ncol=1, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}  
+
+##end code for Night graph
 ```
 
-`r if(tempsum>0 & windsum>0 & loc=="1" & spn>1) {'**Figure 4.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by species.  '} else if(tempsum=="0" & windsum>0 & loc=="1" & spn>1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by species.  '}`
 
-```{r fig.width=9, fig.height=10}
-#windspeed graph
-#if one location and one species
-if(windsum>0 & loc=="1" & spn=="1") {
-graphwc<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
-  geom_point(df, size=3, shape=1,
-             mapping = aes(x=wind_speed_mph, y= percentile, color=activity_level))+
-  xlab("Windspeed at Sunset (mph)")+
-  ylab("Bat Activity Level (Percentile)")+
+```{r fig.width=9, fig.height=8}
+## Night ~ med graph if 1 location, 1 species
+#if time difference is between 21 and 50 days 
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>21) & (difftime(max(medians$Night),min(medians$Night), units='days')<50) & locs=="1" & spn=="1"){ graphG<-ggplot(medians, aes(x= Night, y= med)) +
+  geom_point(medians, size=3, 
+             mapping = aes(x=Night, y= med, color=activity_level, shape=1))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
                       breaks=c("High","Moderate/High","Moderate",
                                "Low/Moderate","Low"))+
-  scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
+  scale_x_date(name = "Date", date_breaks = "1 week", date_labels = "%d %b %Y")+
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_rect(linetype="blank"),
         axis.line=element_line(size=0.5, colour="black", linetype="solid"),
         axis.title.x=element_text(size=18),
-        axis.text.x  = element_text(size=16),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
         axis.text.y  = element_text(size=12),
         axis.line.x = element_line(color="black", size = 0.5),
         axis.line.y = element_line(color="black", size = 0.5),
@@ -2100,153 +2031,206 @@ graphwc<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
   geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
   geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
   geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-graphwc}
+  graphG}
+
+##end code for Night graph
 ```
 
-`r if(tempsum>0 & windsum>0 & loc=="1" & spn=="1") {'**Figure 4.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset.  '} else if(tempsum=="0" & windsum>0 & loc=="1" & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) bats and the temperature at sunset.  '}`
+```{r fig.width=9, fig.height=8}
+## Night ~ med graph if 1 location, >1 species
+#if time difference is between 21 and 50 days 
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>21) & (difftime(max(medians$Night),min(medians$Night), units='days')<50) & locs=="1" & spn>1) { 
+  
+  for (i in seq_len(n_pages2)) {
+  
+  print(ggplot(medians, aes(x= Night, y= med))+
+  geom_point(medians, size=3, shape=1,
+             mapping = aes(x=Night, y= med, color=activity_level))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
+  scale_x_date(name = "Date", date_breaks = "1 week", date_labels = "%d %b %y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  facet_grid_paginate(species ~ ., ncol=1, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}
+##end code for Night graph
+```
+
+
+```{r fig.width=9, fig.height=8}
+## Night ~ med graph if 1 location, 1 species
+#if time diff between 50 and 300 days
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>50) & (difftime(max(medians$Night),min(medians$Night), units='days')<300) & locs=="1" & spn=="1"){ ggplot(medians, aes(x= Night, y= med)) +
+   geom_point(medians, size=3, shape=1, 
+             mapping = aes(x=Night, y= med, color=activity_level))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
+  scale_x_date(name = "Date", date_breaks = "3 weeks", date_labels = "%d %b %y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(linetype="blank"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00")
+  }
+
+##end code for Night graph
+```
 
 ```{r fig.width=9, fig.height=10}
-#windspeed graph
-#if between 2 and 5 locations and only one species
-if(windsum>0 & loc>1 & loc<5 & spn=="1") {
-  graphwd<-ggplot(df, aes(x=wind_speed_mph, y=percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=wind_speed_mph, y=percentile, color=activity_level))+
-    xlab("Windspeed at Sunset (mph)")+
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low"))+
-    scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=18),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=12),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18)) +
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_grid(location_name ~ .) +
-    theme(strip.text.x = element_text(size=16, face="italic"))
-  graphwd}
+## Night ~ med graph if 1 location, >1 species
+#if time diff between 50 and 300 days
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>50) & (difftime(max(medians$Night),min(medians$Night), units='days')<300) & locs=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages2)) {
+  
+  print(ggplot(medians, aes(x= Night, y= med))+
+  geom_point(medians, size=3, shape = 1,
+             mapping = aes(x=Night, y= med, color=activity_level))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
+  scale_x_date(name = "Date", date_breaks = "3 weeks", date_labels = "%d %b %y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16, hjust=1, vjust=0),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  facet_grid_paginate(species ~ ., ncol=1, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+ }
+}
+
+##end code for Night graph
 ```
 
-`r if(tempsum>0 & windsum>0 & loc>1 & loc<5 & spn=="1") {'**Figure 4.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '} else if(tempsum=="0" & windsum>0 & loc>1 & loc<5 & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '}`
 
 ```{r fig.width=9, fig.height=8}
-#windspeed graph
-#if between 2 and 5 locations and more than one species
-if(windsum>0 & loc>1 & loc<5 & spn<1) {
-  graphwd<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=wind_speed_mph, y= percentile, color=activity_level))+
-    xlab("Windspeed at Sunset (mph)")+
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low"))+
-    scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=18),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=12),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18)) +
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_grid(species ~ location_name) +
-    theme(strip.text.y = element_text(size=16, face="italic"), #species names in italics
-          strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphwd}
+## Night ~ med graph if 1 location, 1 species
+#if data spans more than a year
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs=="1" & spn=="1") {graphm<-ggplot(medians, aes(x= Night, y= med)) +
+  geom_point(medians, size=3, 
+             mapping = aes(x=Night, y= med, color=activity_level, shape=1))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
+  scale_x_date(name = "Date", date_breaks = "12 weeks", date_labels = "%d %b %Y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(linetype="blank"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  graphm}
+
+##end code for Night graph
 ```
 
-`r if(tempsum>0 & windsum>0 & loc>1 & loc<5 & spn<1) {'**Figure 4.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by location and species.  '} else if(tempsum=="0" & windsum>0 & loc>1 & loc<5 & spn<1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by location and species.  '}`
 
 ```{r fig.width=9, fig.height=8}
-#windspeed graph
-#if more than 5 locations but only one species
-if(windsum>0 & loc>=5 & spn=="1") {
-  graphwe<-ggplot(df, aes(x=wind_speed_mph , y=percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x=wind_speed_mph, y= percentile, color=activity_level))+
-    xlab("Windspeed at Sunset (mph)")+
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low"))+
-    scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=18),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=12),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18)) +
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_wrap( ~ location_name, ncol=2) +
-    theme(strip.text.x = element_text(size=16, face="italic"))
-  graphwe}
+## Night ~ med graph if 1 location, >1 species
+#if data spans more than a year
+
+if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs=="1" & spn>1) {
+  
+  for (i in seq_len(n_pages2)) {
+  
+  print(ggplot(medians, aes(x= Night, y= med))+
+  geom_point(medians, size=3, 
+             mapping = aes(x=Night, y= med, color=activity_level, shape=1))+
+  xlab("Night")+ #set x-axis
+  ylab("Bat Activity Level (med)")+
+  scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
+                      breaks=c("High","Moderate/High","Moderate",
+                               "Low/Moderate","Low"))+
+  scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
+  scale_x_discrete(labels=abbreviate)+
+  scale_x_date(name = "Date", date_breaks = "12 weeks", date_labels = "%d %b %Y")+
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(colour="black", linetype="solid"),
+        axis.line=element_line(size=0.5, colour="black", linetype="solid"),
+        axis.title.x=element_text(size=18),
+        axis.text.x  = element_text(angle=90,size=16),
+        axis.text.y  = element_text(size=12),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5),
+        axis.title.y=element_text(size=18)) +
+  geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
+  geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
+  geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
+  geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
+  facet_grid_paginate(species ~ ., ncol=1, nrow=4, scales="fixed", page=i) +
+  theme(strip.text.y = element_text(size=16, face="italic")))
+  }
+}
+
+##end code for Night graph
 ```
 
-`r if(tempsum>0 & windsum>0 & loc>=5 & spn=="1") {'**Figure 4.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '} else if(tempsum=="0" & windsum>0 & loc>5 & spn=="1") {'**Figure 3.**\n The relationship between recorded activity (percentile) of bats and the temperature at sunset, split by location.  '}`
-
-```{r fig.width=9, fig.height=8}
-#windspeed graph
-#if more than 5 locations and more than one species
-if(windsum>0 & loc>=5 & spn>1) {
-  graphwe<-ggplot(df, aes(x = wind_speed_mph, y = percentile))+
-    geom_point(df, size=3, shape=1,
-               mapping = aes(x = wind_speed_mph, y = percentile, color = activity_level))+
-    xlab("Windspeed at Sunset (mph)")+
-    ylab("Bat Activity Level (Percentile)")+
-    scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
-                        breaks=c("High","Moderate/High","Moderate",
-                                 "Low/Moderate","Low"))+
-    scale_y_continuous(breaks=seq(0,100,20),limits=c(0,100)) +
-    theme_bw() +
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour="black", linetype="solid"),
-          axis.line=element_line(size=0.5, colour="black", linetype="solid"),
-          axis.title.x=element_text(size=18),
-          axis.text.x  = element_text(size=16),
-          axis.text.y  = element_text(size=12),
-          axis.line.x = element_line(color="black", size = 0.5),
-          axis.line.y = element_line(color="black", size = 0.5),
-          axis.title.y=element_text(size=18)) +
-    geom_hline(aes(yintercept=20), linetype="dashed", color="#0072B2") +
-    geom_hline(aes(yintercept=40), linetype="dashed", color="#56B4E9") +
-    geom_hline(aes(yintercept=60), linetype="dashed", color="#009E73") +
-    geom_hline(aes(yintercept=80), linetype="dashed", color="#E69F00") +
-    facet_wrap(species ~ location_name, ncol=2) +
-    theme(strip.text.y = element_text(size=16, face="italic"), #species names in italics
-          strip.text.x = element_text(size=16)) #make the location labels bigger
-  graphwe}
-```
-
-`r if(tempsum>0 & windsum>0 & loc>=5 & spn>1) {'**Figure 4.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by location and species.  '} else if(tempsum=="0" & windsum>0 & loc>5 & spn>1) {'**Figure 3.**\n The relationship between recorded bat activity (percentile) and the temperature at sunset, split by location and species.  '}`
-
+`r '**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '`
 
 
 
