@@ -1780,6 +1780,104 @@ if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc>=5 & spn=="1
 
 `r if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
+
+
+## PER DETECTOR, PER MONTH
+
+
+#### Table 1
+
+Summary table showing the number of nights recorded bat activity fell into each activity band for each species at each detector during each month.
+```{r}
+
+actdata <- plyr::ddply(df, c("location_name", "species", "Month"), summarise,
+                 Nights.high = sum(activity_level=="high"),
+                 Nights.modhigh = sum(activity_level=="medium/high"),
+                 Nights.mod = sum(activity_level=="medium"),
+                 Nights.lowmod = sum(activity_level=="low/medium"),
+                 Nights.low = sum(activity_level=="low"))
+
+#rename columns
+names(actdata)[names(actdata)=="location_name"] <- "Detector ID"
+names(actdata)[names(actdata)=="species"] <- "Species/Species Group"
+names(actdata)[names(actdata)=="Nights.high"] <- "Nights of High Activity"
+names(actdata)[names(actdata)=="Nights.modhigh"] <- "Nights of Moderate/ High Activity"
+names(actdata)[names(actdata)=="Nights.mod"] <- "Nights of Moderate Activity"
+names(actdata)[names(actdata)=="Nights.lowmod"] <- "Nights of Low/ Moderate Activity"
+names(actdata)[names(actdata)=="Nights.low"] <- "Nights of Low Activity"                  
+
+results='asis'#important to run this as it ensures the raw table output isn't processed further by knitr
+datatable2<-actdata
+emphasize.italics.cols(2) #second column needs to be in italics i.e. species names
+panderOptions("table.split.table", Inf) #don't split table
+pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE) 
+  
+
+```
+
+
+#### Table 2
+
+Summary table showing key metrics for each species recorded per month. Please note that the reference range is not split by month.
+```{r}
+library(plyr)
+library(rcompanion)
+
+con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
+confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
+                          data       = con, 
+                          conf       = 0.95, 
+                          R          = 1000,
+                          wilcox =   TRUE, 
+                          bca        = FALSE, 
+                          digits     = 3)
+
+confint <- transform(confint, Wilcox.lower = ifelse(Wilcox.lower == "NaN", Median, Wilcox.lower))
+confint <- transform(confint, Wilcox.upper = ifelse(Wilcox.upper == "NaN", Median, Wilcox.upper))
+
+
+mm<-merge(con, confint) #merge with subsetted dataset to put columns with the confidence intervals on the end
+mm$confint = paste(mm$Wilcox.lower, mm$Wilcox.upper, sep=" - ") #add a new column with CIs merged
+
+non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+please<-rbind(mm, non) #join the two datasets back together
+
+library(plyr) #ddply as normal
+mdata2 <- plyr::ddply(please, c("location_name", "species", "Month"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="location_name"] <- "Detector ID"
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(2)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+```
+
+
+
 ## PER SITE
 
 #### Table 1
@@ -2274,6 +2372,97 @@ if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs==
 ## PER SITE, PER MONTH
 
 
+#### Table 1
+
+Summary table showing the number of nights recorded bat activity fell into each activity band for each species during each month.
+```{r}
+
+actdata <- plyr::ddply(df, c("species", "Month"), summarise,
+                 Nights.high = sum(activity_level=="high"),
+                 Nights.modhigh = sum(activity_level=="medium/high"),
+                 Nights.mod = sum(activity_level=="medium"),
+                 Nights.lowmod = sum(activity_level=="low/medium"),
+                 Nights.low = sum(activity_level=="low"))
+
+#rename columns
+names(actdata)[names(actdata)=="species"] <- "Species/Species Group"
+names(actdata)[names(actdata)=="Nights.high"] <- "Nights of High Activity"
+names(actdata)[names(actdata)=="Nights.modhigh"] <- "Nights of Moderate/ High Activity"
+names(actdata)[names(actdata)=="Nights.mod"] <- "Nights of Moderate Activity"
+names(actdata)[names(actdata)=="Nights.lowmod"] <- "Nights of Low/ Moderate Activity"
+names(actdata)[names(actdata)=="Nights.low"] <- "Nights of Low Activity"                  
+
+results='asis'#important to run this as it ensures the raw table output isn't processed further by knitr
+datatable2<-actdata
+emphasize.italics.cols(1) #second column needs to be in italics i.e. species names
+panderOptions("table.split.table", Inf) #don't split table
+pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE) 
+  
+
+```
+
+
+#### Table 2
+
+Summary table showing key metrics for each species recorded per month. Please note that the reference range is not split by month.
+```{r}
+library(plyr)
+library(rcompanion)
+
+con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
+confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
+                          data       = con, 
+                          conf       = 0.95, 
+                          R          = 1000,
+                          wilcox =   TRUE, 
+                          bca        = FALSE, 
+                          digits     = 3)
+
+confint <- transform(confint, Wilcox.lower = ifelse(Wilcox.lower == "NaN", Median, Wilcox.lower))
+confint <- transform(confint, Wilcox.upper = ifelse(Wilcox.upper == "NaN", Median, Wilcox.upper))
+
+
+mm<-merge(con, confint) #merge with subsetted dataset to put columns with the confidence intervals on the end
+mm$confint = paste(mm$Wilcox.lower, mm$Wilcox.upper, sep=" - ") #add a new column with CIs merged
+
+non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+please<-rbind(mm, non) #join the two datasets back together
+
+library(plyr) #ddply as normal
+mdata2 <- plyr::ddply(please, c("species", "Month"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(1)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+```
+
+
+
 ###Figures
 
 ```{r fig.width=9, fig.height=6}
@@ -2305,7 +2494,7 @@ graphbox<-ggplot(df, aes(x=Spp, y=percentile))+ #add lines first
         axis.line.y = element_line(color="black", size = 0.5),
         axis.title.y=element_text(size=16),
         legend.position="none") +
-  facet_wrap(~Month)
+  facet_wrap(~Month, ncol=2)
 graphbox
 
 #endcode for boxplot
