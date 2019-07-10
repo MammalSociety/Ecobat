@@ -40,7 +40,7 @@ library(grid)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Bchrist.csv")
 #B_data <- read.csv("./test_data.csv")
 
 
@@ -500,8 +500,8 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 Summary table showing key metrics for each species recorded.
 ```{r}
-library(plyr)
-library(rcompanion)
+
+if (mean(wp$surv) >= 2) {
 
 con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
 confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
@@ -553,6 +553,47 @@ emphasize.italics.cols(2)
 panderOptions("table.split.table", Inf)
 panderOptions("table.split.cells", Inf)
 pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+}
+
+
+
+if (mean(wp$surv) == 1) {
+  
+non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+library(plyr) #ddply as normal
+mdata2 <- plyr::ddply(non, c("location_name", "species"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="location_name"] <- "Detector ID"
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(2)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+}
 
 ```
 
@@ -1820,8 +1861,8 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 Summary table showing key metrics for each species recorded per month. Please note that the reference range is not split by month.
 ```{r}
-library(plyr)
-library(rcompanion)
+
+if (mean(wp$surv) >=2) {
 
 con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
 confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
@@ -1874,6 +1915,48 @@ panderOptions("table.split.table", Inf)
 panderOptions("table.split.cells", Inf)
 pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre'))
 
+}
+
+if (mean(wp$surv) == 1) {
+  
+non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+
+library(plyr) #ddply as normal
+mdata2 <- plyr::ddply(non, c("location_name", "species", "Month"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="location_name"] <- "Detector ID"
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(2)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+}
+
+
+
 ```
 
 
@@ -1913,8 +1996,8 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 Summary table showing key metrics for each species recorded.
 ```{r}
-library(plyr)
-library(rcompanion)
+
+if (mean(wp$surv) >= 2) {
 
 con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
 confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
@@ -1965,6 +2048,44 @@ emphasize.italics.cols(1)
 panderOptions("table.split.table", Inf)
 panderOptions("table.split.cells", Inf)
 pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre'))
+}
+
+
+if (mean(wp$surv) == 1) {
+
+  non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+
+mdata2 <- plyr::ddply(non, c("species"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(1)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre'))
+  
+}
 
 ```
 
@@ -2406,8 +2527,8 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 Summary table showing key metrics for each species recorded per month. Please note that the reference range is not split by month.
 ```{r}
-library(plyr)
-library(rcompanion)
+
+if (mean(wp$surv) >= 2) {
 
 con<-subset(wp, surv>=2) #subset dataset to only include records with more than one night of surveying
 confint<-groupwiseMedian(percentile ~ location_name + Spp, #code to get confidence intervals
@@ -2458,6 +2579,44 @@ emphasize.italics.cols(1)
 panderOptions("table.split.table", Inf)
 panderOptions("table.split.cells", Inf)
 pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+}
+
+
+if (mean(wp$surv) ==1) {
+  
+  non<-subset(wp,surv=="1") #subset dataset to only include records with one night of surveying
+if(nrow(non)>0) {
+  non$n <- 0 #add empty columns to enable merger
+non$Median <- 0
+non$Wilcox.upper <- 0
+non$Wilcox.lower <- 0
+non$confint <- 0}
+
+mdata2 <- plyr::ddply(non, c("species", "Month"), summarise,
+               Median.percentile = ceiling(median(percentile)),#finds median percentile
+               conf = max(confint),
+               Highest.perc = max(percentile), #returns max percentiles
+               Number.nights = length(date), #returns how many nights of data in the dataset
+               Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
+#same in each row because same species same location
+names(mdata2)[names(mdata2)=="species"] <- "Species/Species Group"
+names(mdata2)[names(mdata2)=="Median.percentile"] <- "Median Percentile"
+names(mdata2)[names(mdata2)=="conf"] <- "95% CIs"
+names(mdata2)[names(mdata2)=="Highest.perc"] <- "Max Percentile"
+names(mdata2)[names(mdata2)=="Number.nights"] <- "Nights Recorded"
+names(mdata2)[names(mdata2)=="Reference.range.size"] <- "Reference Range"
+
+library(knitr)
+library(pander)
+results='asis' #important to run this as it ensures the raw table output isn't processed further by knitr
+medtable2<-mdata2
+emphasize.italics.cols(1)
+panderOptions("table.split.table", Inf)
+panderOptions("table.split.cells", Inf)
+pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('right', 'left', 'centre', 'centre', 'centre', 'centre', 'centre'))
+
+}
 
 ```
 
