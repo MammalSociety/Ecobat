@@ -42,7 +42,7 @@ library(grid)
 #B_data <- read.csv("../Data/RiggedHill.csv")
 #B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Bchrist.csv")
 #B_data <- read.csv("./test_data.csv")
-B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
 
 
 
@@ -54,7 +54,7 @@ B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
 
-#B_data <- params$n
+B_data <- params$n
 
 ```
 
