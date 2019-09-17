@@ -106,7 +106,7 @@ recordsum <- ddply(df, c("sref", "species"), summarise, #summarise to produce a 
 #now merge this back into the original csv - we don't want to delete any files at this stage
 wp<- merge(df, recordsum, c("sref","species")) #merge with original dataset - adds surv column onto end of dataset
 
-wp$date <- as.Date(wp$date, format = "%d/%m/%Y")
+wp$date <- as.Date(wp$date, format = "%Y-%m-%d")
 
 # old code if only using species recorded on >= 5 nights
 
