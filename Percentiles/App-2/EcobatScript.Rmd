@@ -28,7 +28,8 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
+#df <- read.csv("C:/Users/brs28/Downloads/download.csv")
+
 
 ```
 
@@ -106,7 +107,7 @@ recordsum <- ddply(df, c("sref", "species"), summarise, #summarise to produce a 
 #now merge this back into the original csv - we don't want to delete any files at this stage
 wp<- merge(df, recordsum, c("sref","species")) #merge with original dataset - adds surv column onto end of dataset
 
-wp$date <- as.Date(wp$date, format = "%Y-%m-%d")
+wp$date <- as.Date(wp$date, format = "%d/%m/%Y")
 
 # old code if only using species recorded on >= 5 nights
 
