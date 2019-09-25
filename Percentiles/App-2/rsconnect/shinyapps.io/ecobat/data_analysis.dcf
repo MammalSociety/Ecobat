@@ -5,9 +5,8 @@ account: ecobat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 194445
-bundleId: 2380543
+bundleId: 2444167
 url: https://ecobat.shinyapps.io/data_analysis/
-when: 1567503986.96879
+when: 1569420992.32155
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: EcobatScript(2).Rmd|EcobatScript.docx|EcobatScript_files/figure-docx/unnamed-chunk-14-1.png|EcobatScript_files/figure-docx/unnamed-chunk-7-1.png
