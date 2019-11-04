@@ -28,7 +28,8 @@ library(ggforce)
 ```{r}
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download.csv")
+
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/reecobat/ST C per Night.csv")
 
 
 ```
@@ -107,7 +108,7 @@ recordsum <- ddply(df, c("sref", "species"), summarise, #summarise to produce a 
 #now merge this back into the original csv - we don't want to delete any files at this stage
 wp<- merge(df, recordsum, c("sref","species")) #merge with original dataset - adds surv column onto end of dataset
 
-#wp$date <- as.Date(wp$date, format = "%d/%m/%Y")
+wp$date <- as.Date(wp$date, format = "%d/%m/%Y")
 
 # old code if only using species recorded on >= 5 nights
 
@@ -1214,8 +1215,8 @@ if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$dat
 #if data spans more than 300 days
 
 if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn=="1") {graphm<-ggplot(wp, aes(x= date, y= percentile)) +
-  geom_point(wp, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+  geom_point(wp, size=3, shape=1,
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1254,8 +1255,8 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn>1) {
   for (i in seq_len(n_pages1)) {
   
   print(ggplot(wp, aes(x= date, y= percentile))+
-  geom_point(wp, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+  geom_point(wp, size=3, shape=1,
+             mapping = aes(x=date, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",

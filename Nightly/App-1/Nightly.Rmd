@@ -40,7 +40,7 @@ library(grid)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Bchrist.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Frith results.csv")
 #B_data <- read.csv("./test_data.csv")
 #B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
 
@@ -1575,8 +1575,8 @@ if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$N
 #if data spans more than a year
 
 if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc=="1" & spn=="1") {graphm<-ggplot(df, aes(x= Night, y= percentile)) +
-  geom_point(df, size=3, 
-             mapping = aes(x=Night, y= percentile, color=activity_level, shape=1))+
+  geom_point(df, size=3, shape=1,
+             mapping = aes(x=Night, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1615,8 +1615,8 @@ if((difftime(max(df$Night),min(df$Night), units='days')>=300) & loc=="1" & spn>1
   for (i in seq_len(n_pages1)) {
   
   print(ggplot(df, aes(x= Night, y= percentile))+
-  geom_point(df, size=3, 
-             mapping = aes(x=Night, y= percentile, color=activity_level, shape=1))+
+  geom_point(df, size=3, shape=1,
+             mapping = aes(x=Night, y= percentile, color=activity_level))+
   xlab("Night")+ #set x-axis
   ylab("Bat Activity Level (Percentile)")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -2896,14 +2896,14 @@ For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 
 ## Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table
 
-**Number of bat calls recorded within the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
+**Number of bat calls recorded before the upper time of the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
 
 \newline  \newline
 ```{r}
-Table <- df %>% 
+Table <- All_data %>% 
   dplyr::filter(post_set_min <= upper) %>% 
   dplyr::group_by(Night, Spp, location_name) %>% 
-  dplyr::summarise(n = sum(passes)) %>%
+  dplyr::count() %>%
   spread(Night, n) %>%
   dplyr::arrange(Spp, location_name) %>%
   dplyr::rename("Detector ID" = location_name) %>%
@@ -2924,7 +2924,7 @@ Table[is.na(Table)] <- 0
 
 ### Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Figures
 
-**Figures show time from 15 minutes before to 90 minutes after sunset. species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars may potentially indicate the presence of a nearby roost.**
+**Figures show time from 15 minutes before to 90 minutes after sunset. species-specific emergence time ranges are shown as grey bars. Bat passes overlapping species-specific grey bars, or occuring earlier than this time range, may potentially indicate the presence of a nearby roost.**
 
 \newline  \newline
 

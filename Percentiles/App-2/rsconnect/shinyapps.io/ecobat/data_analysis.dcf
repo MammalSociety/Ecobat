@@ -5,8 +5,8 @@ account: ecobat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 194445
-bundleId: 2444167
+bundleId: 2562746
 url: https://ecobat.shinyapps.io/data_analysis/
-when: 1569420992.32155
+when: 1572872637.23091
 asMultiple: FALSE
 asStatic: FALSE
