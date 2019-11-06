@@ -40,7 +40,7 @@ library(grid)
 # TESTING - load in test data
 
 #B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Frith results.csv")
+#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/COMBINED DOWNLOAD.csv")
 #B_data <- read.csv("./test_data.csv")
 #B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
 
@@ -371,7 +371,7 @@ Effort %>%
   geom_point(aes(end, location_name),  colour = "black", shape = 16, size = 3.6) +
   xlab("\nDate") +
   ylab("Detector ID\n") +
-  scale_x_date(date_labels = "%b %d") +
+  scale_x_date(date_labels = "%d %b %y") +
   theme_bw() +
   theme(legend.position = "none") +
   theme (axis.title.y = element_text(colour="black", size=16,
@@ -727,7 +727,7 @@ if(loc>=5 & spn=="1") {graphboxc<-ggplot(df, aes(x=location_name, y=percentile))
   xlab("Detector ID")+
   ylab("Bat Activity Level (Percentile)")+
   scale_fill_grey(start = 0.35, end = 1)+
-  scale_x_discrete(drop=FALSE) +
+  scale_x_discrete(drop=TRUE) +
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) +
   expand_limits(y=c(0,100))+
   theme_bw() +
@@ -2161,7 +2161,7 @@ graphbox<-ggplot(df, aes(x=Spp, y=percentile))+ #add lines first
         axis.line.y = element_line(color="black", size = 0.5),
         axis.title.y=element_text(size=16),
         legend.position="none") +
-  facet_wrap(~Month)
+  facet_wrap(~Month, ncol=2)
 graphbox
 
 #endcode for boxplot

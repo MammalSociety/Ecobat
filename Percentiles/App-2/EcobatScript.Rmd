@@ -29,7 +29,7 @@ library(ggforce)
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
 
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/reecobat/ST C per Night.csv")
+df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/reecobat/ST C per Night.csv")
 
 
 ```
@@ -37,12 +37,12 @@ library(ggforce)
 ```{r}
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-df <- params$n
+#df <- params$n
 ```
 
 ```{r}
 
-cnames <- names(df)
+cnames <- names(d)
 cnames[grepl('location_name$', cnames)] <- 'location_name'
 
 names(df) <- cnames

@@ -11,6 +11,9 @@ library(suncalc)
 library(ggforce)
 library(janitor)
 
+
+options(shiny.maxRequestSize=30*1024^2)
+
 shinyServer(function(input, output) {
 
   output$contents <- renderTable({
