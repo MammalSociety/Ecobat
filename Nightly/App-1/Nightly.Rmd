@@ -37,13 +37,10 @@ library(grid)
 
 ```{r test data}
 
-# TESTING - load in test data
+# TESTING - load in test data / data that needs troubleshooting
+# this should be hashtagged out when 
 
-#B_data <- read.csv("../Data/RiggedHill.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/COMBINED DOWNLOAD.csv")
 #B_data <- read.csv("./test_data.csv")
-#B_data <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Desktop/download.csv")
-
 
 
 ```
@@ -154,10 +151,7 @@ sun_data <- sun_data %>%
 # Join bat data with the sundata by Night
 joined_data <- dplyr::left_join(B_data2, sun_data, by="Night")
 
-```
 
-
-```{r}
 #  ## Create Variables Relative to Suntimes and Bat Observation 
 # 
 #  Variables relative to suntimes and bat observation   
@@ -190,6 +184,7 @@ All_data <- joined_data %>%
          pre_rise_hr_int = as.integer(round(pre_rise_hr, digits = 0)))
 
 ```
+
 
 ```{r roost emergence}
 

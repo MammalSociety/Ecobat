@@ -12,26 +12,33 @@ library(ggforce)
 library(janitor)
 
 
-options(shiny.maxRequestSize=30*1024^2)
+options(shiny.maxRequestSize=50*1024^2)
+# the default file size limit is 5MB, the above code ups it to 50MB
 
 shinyServer(function(input, output) {
 
   output$contents <- renderTable({
     
-    # input$file1 will be NULL initially. After the user selects and uploads a 
-    # file, it will be a data frame with 'name', 'size', 'type', and 'datapath' 
-    # columns. The 'datapath' column will contain the local filenames where the 
-    # data can be found.
+  data2 <- reactive({
+  # input$file1 will be NULL initially. After the user selects and uploads a file, it will be a data frame with 'name', 'size', 'type', and 'datapath' columns. The 'datapath' column will contain the local filenames where the data can be found.
+      
+      data1 <- input$file #grabs uploaded file
+      
+      if (is.null(data1)) #if no data has been uploaded, main panel is empty
+        return(NULL)
+      
+      
+      data2 <- read.csv(data1$datapath, header=TRUE)
+      data2
+    })
     
-    data1 <- input$file #grabs uploaded file
+    output$contents <- renderTable({
+    head(data2())
+      
+    })
     
-    if (is.null(data1)) #if no data has been uploaded, main panel is empty
-      return(NULL)
-    
-    data2 <- read.csv(data1$datapath, header=TRUE)
-    data2 #if data has been uploaded, it reads it and then displays in the main panel
   })
-  
+
   # this reactive output tells Shiny that once data has been uploaded it should display a   download button for the
   # Rmd report. If no data has been uploaded then the button will not appear.
   output$ui.download <- renderUI({

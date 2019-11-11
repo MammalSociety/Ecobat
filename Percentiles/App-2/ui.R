@@ -9,7 +9,7 @@ library(tidyr)
 library(rcompanion)
 
 ui<-(fluidPage( #fluidpage means page width determined by window size
-  titlePanel("Bat Activity Analysis"), #title of Shiny app
+  titlePanel("*Per Night* Bat Activity Analysis"), #title of Shiny app
   sidebarLayout( #we want the layout with a sidebar and a main panel
     sidebarPanel( #options for sidepanel
       
@@ -26,7 +26,7 @@ ui<-(fluidPage( #fluidpage means page width determined by window size
                   "text/comma-separated-values, text/plain",
                   ".csv")),
       
-      helpText("Default max. file size is 5MB"), #input decorations
+      helpText("Max. file size is 50MB"), #input decorations
       buttonLabel = "Browse...",
       placeholder = "No file selected",
       

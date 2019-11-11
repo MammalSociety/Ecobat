@@ -29,7 +29,9 @@ library(ggforce)
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
 
-df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/reecobat/ST C per Night.csv")
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Ecobat_Proforma.csv")
+
+
 
 
 ```
@@ -37,12 +39,12 @@ df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/reecobat/ST C per Nigh
 ```{r}
 #this is here for when the script is finalised and the Shiny app is deployed
 #read data in from shiny
-#df <- params$n
+df <- params$n
 ```
 
 ```{r}
 
-cnames <- names(d)
+cnames <- names(df)
 cnames[grepl('location_name$', cnames)] <- 'location_name'
 
 names(df) <- cnames
@@ -108,22 +110,12 @@ recordsum <- ddply(df, c("sref", "species"), summarise, #summarise to produce a 
 #now merge this back into the original csv - we don't want to delete any files at this stage
 wp<- merge(df, recordsum, c("sref","species")) #merge with original dataset - adds surv column onto end of dataset
 
-wp$date <- as.Date(wp$date, format = "%d/%m/%Y")
+wp$Dates <- as.Date(wp$date, format="%d/%m/%Y")
 
-# old code if only using species recorded on >= 5 nights
+if (NA %in% wp$Dates) {
+  wp$Dates <- as.Date(wp$date, format="%Y/%m/%d")
+}
 
-# #wp<-subset(wp, surv >= 5) #subset to only include species with more than 5 records per location
-# 
-# spn<-length(unique(wp$species)) #calculate how many species had more than 5 records per location
-# loc<-length(unique(wp$sref)) #calculate how many locations the new subsetted dataframe
-# lspecies<-(unique(wp$species)) #pull names of species from new subsetted dataframe
-# date2<-as.Date(wp$date,format="%d/%m/%Y") #for date graphs later, convert date column into date objects
-# if(is.na(date2)) {wp$date<-as.Date(wp$date)}
-# wp$date<-parse_date_time(wp$date,"ymd")
-# if(is.na(wp$date)) {wp$date<-parse_date_time(wp$date,"dmy")}
-# date2<-parse_date_time(date2, "ymd")
-# if(is.na(wp$date)) {wp$date<-date2}
-# wp$date<-as.Date(wp$date)
 
 
 spn<-length(unique(df$species))
@@ -216,7 +208,7 @@ mdata2 <- ddply(please, c("location_name", "species"), summarise,
                Median.percentile = ceiling(median(percentile)),#finds median percentile
                conf = max(confint),
                Highest.perc = max(percentile), #returns max percentiles
-               Number.nights = length(date), #returns how many nights of data in the dataset
+               Number.nights = length(Dates), #returns how many nights of data in the dataset
                Reference.range.size = mean(reference_range_size)) #returns reference range size - i used mean as it should be the 
 #same in each row because same species same location
 names(mdata2)[names(mdata2)=="location_name"] <- "Location"
@@ -471,19 +463,17 @@ graphboxc}
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, 1 species
 #if less than or equal to 21 days
-wp$date<-as.Date(wp$date)
-wp$date2<-format(wp$date, "%d/%m/%Y")
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn=="1"){ graphD<-ggplot(wp, aes(x= date, y= percentile)) +
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc=="1" & spn=="1"){ graphD<-ggplot(wp, aes(x= Dates, y= percentile)) +
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
                       breaks=c("High","Moderate/High","Moderate",
                                "Low/Moderate","Low"))+
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-  scale_x_date(name = "Date", date_breaks = "3 days", date_labels = "%d %b %Y")+
+  scale_x_Dates(name = "Date", date_breaks = "3 days", date_labels = "%d %b %Y")+
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -504,19 +494,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn=="1"
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, >1 species
 #if less than or equal to 21 days
 
-if((difftime(max(wp$date),min(wp$date), units='days') <= 21) & loc=="1" & spn>1){
+if((difftime(max(wp$Dates),min(wp$Dates), units='days') <= 21) & loc=="1" & spn>1){
   
   for (i in seq_len(n_pages1)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -547,19 +537,19 @@ if((difftime(max(wp$date),min(wp$date), units='days') <= 21) & loc=="1" & spn>1)
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #less than or equal to 21 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>=2 & loc<=5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>=2 & loc<=5 & spn>1) {
   
   for (i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -590,15 +580,15 @@ if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>=2 & loc<=5 & s
 
 #end code for date graph
 ```
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 ```{r fig.width=9, fig.height=10}
 # date ~ percentile graph if 1 species and 2-5 locations
 #less than or equal to 21 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>=2 & loc<=5 & spn=="1") {graphE<-ggplot(wp, aes(x= date, y= percentile))+
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>=2 & loc<=5 & spn=="1") {graphE<-ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -627,19 +617,19 @@ graphE}
 
 #end code for date graph
 ```
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if >5 location + >1 species
 #less than or equal to 21 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>5 & spn>1) {
   
   for (i in seq_len(n_pages)) { 
     
-  print(ggplot(wp, aes(x= wp$date, y= percentile))+
+  print(ggplot(wp, aes(x= wp$Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -670,19 +660,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn>1) {
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=12}
 # date ~ percentile graph if 1 species and >5 location
 #less than or equal to 21 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn=="1") { 
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>5 & spn=="1") { 
   
   for (i in seq_len(n_pages)) { 
-    print(ggplot(wp, aes(x= date, y= percentile))+
+    print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -712,15 +702,15 @@ if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn=="1") {
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')<=21) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, 1 species
 #if time difference is between 22 - 50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc=="1" & spn=="1"){ graphG<-ggplot(wp, aes(x= date, y= percentile)) +
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc=="1" & spn=="1"){ graphG<-ggplot(wp, aes(x= Dates, y= percentile)) +
   geom_point(wp, size=3, 
-             mapping = aes(x=date, y= percentile, color=activity_level, shape=1))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level, shape=1))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -748,19 +738,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$da
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
 
 ```{r fig.width=6, fig.height=8}
 ## date ~ percentile graph if 1 location, >1 species
 #if time difference is between 22-50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc=="1" & spn>1) { 
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc=="1" & spn>1) { 
   
   for (i in seq_len(n_pages1)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
                       breaks=c("High","Moderate/High","Moderate",
@@ -790,19 +780,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$da
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
 
 ```{r fig.width=10, fig.height=10}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if time difference is between 22-50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>=2 & loc<=5 & spn>1){
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>=2 & loc<=5 & spn>1){
   
   for (i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -834,16 +824,16 @@ if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$da
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=10}
 # date ~ percentile graph if 1 species and 2-5 locations
 #if time difference is between 22-50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>=2 & loc<=5 & spn=="1"){ graphh<-ggplot(wp, aes(x= date, y= percentile))+
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>=2 & loc<=5 & spn=="1"){ graphh<-ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -873,19 +863,19 @@ graphh}
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if >5 location + >1 species
 #if time difference is between 22-50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>5 & spn>1) {
   
   for (i in seq_len(n_pages)) { 
     
-    print(ggplot(wp, aes(x= wp$date, y= percentile))+
+    print(ggplot(wp, aes(x= wp$Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -916,20 +906,20 @@ if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$da
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=12}
 # date ~ percentile graph if 1 species and >5 location
 #if time difference is between 22-50 days 
 
-if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>5 & spn=="1"){
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>5 & spn=="1"){
   
   for (i in seq_len(n_pages)) { 
     
-    print(ggplot(wp, aes(x= date, y= percentile))+
+    print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -959,15 +949,15 @@ if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$da
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>=22) & (difftime(max(wp$date),min(wp$date), units='days')<=50) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>=22) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=50) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, 1 species
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc=="1" & spn=="1"){ ggplot(wp, aes(x= date, y= percentile)) +
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc=="1" & spn=="1"){ ggplot(wp, aes(x= Dates, y= percentile)) +
    geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -995,19 +985,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$dat
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days') <=300) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days') <=300) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if 1 location, >1 species
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc=="1" & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc=="1" & spn>1) {
   
   for (i in seq_len(n_pages1)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape = 1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1038,19 +1028,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$dat
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>=2 & loc<=5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>=2 & loc<=5 & spn>1) {
   
   for (i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= wp$date, y= percentile))+
+  print(ggplot(wp, aes(x= wp$Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1082,16 +1072,16 @@ if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$dat
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=10}
 # date ~ percentile graph if 1 species and 2-5 locations
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>=2 & loc<=5 & spn=="1"){ graphk<-ggplot(wp, aes(x= date, y= percentile))+
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>=2 & loc<=5 & spn=="1"){ graphk<-ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1121,19 +1111,19 @@ graphk}
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=12}
 ## date ~ percentile graph if >5 location + >1 species
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>5 & spn>1) {
   
 for (i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= wp$date, y= percentile))+
+  print(ggplot(wp, aes(x= wp$Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=wp$date, y= percentile, color=activity_level))+
+             mapping = aes(x=wp$Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1165,20 +1155,20 @@ for (i in seq_len(n_pages)) {
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=12}
 # date ~ percentile graph if 1 species and >5 location
 #if time diff between 51-300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>5 & spn=="1") {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>5 & spn=="1") {
   
    for (i in seq_len(n_pages)) { 
      
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1208,15 +1198,15 @@ if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$dat
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>50) & (difftime(max(wp$date),min(wp$date), units='days')<=300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>50) & (difftime(max(wp$Dates),min(wp$Dates), units='days')<=300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, 1 species
 #if data spans more than 300 days
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn=="1") {graphm<-ggplot(wp, aes(x= date, y= percentile)) +
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc=="1" & spn=="1") {graphm<-ggplot(wp, aes(x= Dates, y= percentile)) +
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1244,19 +1234,19 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn=="1"
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc=="1" & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
 
 ```{r fig.width=9, fig.height=8}
 ## date ~ percentile graph if 1 location, >1 species
 #if data spans more than a year
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc=="1" & spn>1) {
   
   for (i in seq_len(n_pages1)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1288,20 +1278,20 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn>1) {
 ##end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc=="1" & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
 
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if 2-5 locations + >1 species
 #if data spans more than a year
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>=2 & loc<=5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>=2 & loc<=5 & spn>1) {
   
   for (i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1333,16 +1323,16 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>=2 & loc<=5 & s
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>=2 & loc<=5 & spn>1) {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=10}
 # date ~ percentile graph if 1 species and 2-5 locations
 #if data spans more than a year
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>=2 & loc<=5 & spn=="1") {graphn<-ggplot(wp, aes(x= date, y= percentile))+
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>=2 & loc<=5 & spn=="1") {graphn<-ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab(expression("Night"))+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1372,20 +1362,20 @@ graphn}
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>=2 & loc<=5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 
 ```{r fig.width=9, fig.height=10}
 ## date ~ percentile graph if >5 location + >1 species
 #if data spans more than a year
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn>1) {
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>5 & spn>1) {
   
    for (i in seq_len(n_pages)) { 
     
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1,
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1416,22 +1406,21 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn>1) {
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
 
 
 ```{r fig.width=9, fig.height=8}
 
 # date ~ percentile graph if 1 species and >5 location
 #if data spans more than a year
-wp$date<-as.Date(wp$date, format = "%d/%m/%Y")
 
-if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn=="1"){ 
+if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>5 & spn=="1"){ 
   
   for(i in seq_len(n_pages)) {
   
-  print(ggplot(wp, aes(x= date, y= percentile))+
+  print(ggplot(wp, aes(x= Dates, y= percentile))+
   geom_point(wp, size=3, shape=1, 
-             mapping = aes(x=date, y= percentile, color=activity_level))+
+             mapping = aes(x=Dates, y= percentile, color=activity_level))+
   xlab("\nNight")+ #set x-axis
   ylab("Bat Activity Level (Percentile)\n")+
   scale_colour_manual(values=cbbPalette, name="Activity\nLevel",
@@ -1461,7 +1450,7 @@ if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn=="1"){
 #end code for date graph
 ```
 
-`r if((difftime(max(wp$date),min(wp$date), units='days')>300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
+`r if((difftime(max(wp$Dates),min(wp$Dates), units='days')>300) & loc>5 & spn=="1") {'**Figure 2.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
 
 ```{r}
 #Code to work out median
