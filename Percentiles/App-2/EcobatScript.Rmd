@@ -29,7 +29,7 @@ library(ggforce)
 #insert file path file
 #this is here so I can test the script before it's linked with the Shiny app
 
-#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/Ecobat_Proforma.csv")
+#df <- read.csv("//smbhome.uscs.susx.ac.uk/brs28/Downloads/download (6).csv")
 
 
 
@@ -116,6 +116,9 @@ if (NA %in% wp$Dates) {
   wp$Dates <- as.Date(wp$date, format="%Y/%m/%d")
 }
 
+if (NA %in% wp$Dates) {
+  wp$Dates <- as.Date(wp$date, format="%Y-%m-%d")
+}
 
 
 spn<-length(unique(df$species))
@@ -556,7 +559,7 @@ if((difftime(max(wp$Dates),min(wp$Dates), units='days')<=21) & loc>=2 & loc<=5 &
                       breaks=c("High","Moderate/High","Moderate",
                                "Low/Moderate","Low"))+
   scale_y_continuous(breaks=seq(0,100,20), limits=c(0,100)) + 
-  scale_x_date(name = "Date", date_breaks = "1 week", date_labels = "%d %b %Y")+
+  scale_x_date(name = "Date", date_breaks = "1 day", date_labels = "%d %b %Y")+
   theme_bw() +
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
