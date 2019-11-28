@@ -5,9 +5,9 @@ account: ecobat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 726051
-bundleId: 2568758
+bundleId: 2624641
 url: https://ecobat.shinyapps.io/Nightly-Analysis/
-when: 1573056671.4324
+when: 1574959232.17128
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: BigTabs.R|Nightly.docx|styles.Rmd|test_data.csv|Thumbs.db|TMS_logo.png|www/Thumbs.db
