@@ -46,7 +46,7 @@ library(grid)
 # TESTING - load in test data / data that needs troubleshooting
 # this should be hashtagged out when deploying to Shiny.io
 
-#B_data <- read.csv("./test_data3.csv")
+#B_data <- read.csv("./test_data.csv")
 
 
 ```
@@ -91,14 +91,13 @@ if (NA %in% B_data$DateTime) {
 
 # Create Useful Variables
 
-# `Night` date at dusk
-# `Month` month of observation `Jan, Feb, Mar....`
+# `Night` date at dusk - so DateTime minus 12 hours
 # `JustTime` time hh:mm of bat observation (12 hours added so plots correctly as `Night` i.e. dusk to dawn)
 
 B_data2 <- B_data %>% 
-  mutate(Night = DateTime - lubridate::hours(12)) %>% # DateTime minus 12 hours
+  mutate(Night = DateTime - lubridate::hours(12)) %>% 
   mutate(Night = lubridate::as_date(Night)) %>%
-  mutate(Month = lubridate::month(Night, label = T)) %>% # Make Month of observation
+  mutate(Month = lubridate::month(Night, label = T)) %>% 
   filter(!is.na(species)) 
 
 ```
@@ -158,29 +157,9 @@ sun_data <- sun_data %>%
 joined_data <- dplyr::left_join(B_data2, sun_data, by="Night")
 
 
-#  ## Create Variables Relative to Suntimes and Bat Observation 
-# 
-#  Variables relative to suntimes and bat observation   
-# 
-# * `post_set_min` bat observation time minutes after sunset  
-#  * `pre_rise_min` bat observation time minutes before sunrise   
-#  * `post_set_hr` bat observation time hours after sunset  
-#  * `pre_rise_hr` bat observation time hours before sunrise   
-#  * `post_set_hr_int` bat observation time as an integer (hour) after sunset  
-#      + `-0.5` to `0.49` hours is `0` hour   
-#      + `0.5` to `1.49` hours is `1` hour   
-#      + `1.5` to `2.49` hours is `2` hour   
-#      + `2.5` to `3.49` hours is `3` hour ect...  
+## Create Variables Relative to Suntimes and Bat Observation 
 
-#  * `pre_rise_hr_int` bat observation time as an integer (hour) before sunrise  
-#      + `-0.5` to `0.49` hours is `0` hour   
-#      + `0.5` to `1.49` hours is `1` hour   
-#      + `1.5` to `2.49` hours is `2` hour   
-#      + `2.5` to `3.49` hours is `3` hour ect...   
-#  * `night_length_hr`  length of the night in hours    
-
-
-# To make sure difference is in minutes/hours etc... use difftime 
+# To make sure difference is in minutes/hours etc. use difftime - should be pretty self-explanatory what's what 
 All_data <- joined_data %>% 
   mutate(post_set_min = as.numeric(difftime(DateTime, sunset,
                                             units='mins')),
@@ -194,6 +173,12 @@ All_data <- joined_data %>%
                                             digits = 0)),
          pre_rise_hr_int = as.integer(round(pre_rise_hr,
                                             digits = 0)))
+
+# FYI: `post_set_hr_int` bat observation time as an integer (hour) after sunset  
+#      + `-0.5` to `0.49` hours is `0` hour   
+#      + `0.5` to `1.49` hours is `1` hour   
+#      + `1.5` to `2.49` hours is `2` hour   
+#      + `2.5` to `3.49` hours is `3` hour ect...
 
 ```
 
@@ -254,7 +239,9 @@ Spp <- c("Barbastelle",
          "Horseshoe bats")
 
 
-# create a table of roost emergence times for each species
+## create a table of roost emergence times for each species
+
+# in order, the lower and upper match, so for Barbastelle which is first in the list, the lower is 25 and the upper is 60 - i.e. barbastelles emerge from roosts 25-60 mins after sunset.
 lower <- c(25, 20, 20, 30, 30, 30, 50, 30, 35, 30, 8, 5, 5, 5, 18, 22, 22, 18, 40, 40, 40, 35, 35, 35)
 upper <- c(60, 25, 25, 35, 33, 35, 70, 35, 55, 70, 18, 9, 18, 25, 28, 32, 28, 32, 60, 60, 60, 48, 50, 50)
 russ <- tibble(species, Spp, lower, upper)
@@ -264,15 +251,17 @@ russ <- tibble(species, Spp, lower, upper)
 
 
 ```{r more variables}
-#Join with Jon Russ data with bat observation data All_data
+
+#Join with russ data with bat observation data All_data
 All_data <- dplyr::left_join(All_data, russ, by = "species")
 
 # add a column for bat passes per hour
 All_data$passes.per.hour <- round((All_data$passes/All_data$night_length_hr),
                                   digits = 2)
 
+#################################################################
 
-# create lists to be used for tables and graphs later:
+## create lists to be used for tables and graphs later:
 
 # list of all of the unique locations in the dataset
 Dets <- c(unique(All_data$location_name))
@@ -287,17 +276,23 @@ Surv.days <- as.data.frame(unique(All_data$Night)) #all unique survey nights
 Surv.days.N <- length(Surv.days$`unique(All_data$Night)`) #count of survey nights
 
 Surv.days.M <- Surv.days %>%
-  mutate(Month = lubridate::month((unique(All_data$Night)), label = T)) %>%
+  mutate(Month = lubridate::month((unique(All_data$Night)),
+                                  label = T)) %>%
   dplyr::count(Month) #count of survey days per month
 
+#################################################################
 
+## GRAPHICS ##
+
+# get a colour-blind friendly colour palette for graphs
 colourCount <- length(unique(All_data$Spp))
 getPalette <- colorRampPalette(brewer.pal(9, "RdBu"))
 
+# set colour palette for activity levels in graphs
+cbbPalette <- c("#D55E00", "#0072B2","#56B4E9","#009E73","#E69F00") 
 
 
 # specify order for the species to be listed in
-
 All_data$Spp <- factor(All_data$Spp,levels=c("Pipistrellus", "Common pipistrelle", "Soprano pipistrelle", "Nathusius'", "Noctule", "Leisler's", "Nyctalus", "Serotine", "Nyctaloid", "Brown long-eared", "Grey long-eared", "Long-eared bats", "Myotis","Alcathoe", "Bechstein's",  "Brandt's", "Daubenton's","Whiskered", "Natterer's", "Barbastelle", "Greater horseshoe", "Lesser horseshoe", "Horseshoe bats"))
          
 ```
@@ -309,6 +304,7 @@ Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night
 
 ```{r det locations}
 
+# table of detector names and locations used
 Table <- All_data %>%
   dplyr::select(location_name, lat, lon) %>%
   dplyr::group_by(location_name, lat, lon) %>%
@@ -351,7 +347,7 @@ knitr::kable(Table, align = "l")
 
 ```{r fig.width=12, fig.height=9}
 
-## horrible bit of code that basically works out the start and end dates of each time the detector is active through time
+## this code works out the start and end dates of each time the detector is active through time
 
 Effort <- All_data %>%
   dplyr::arrange(location_name, Night) %>%
@@ -426,19 +422,20 @@ df$location_name <- as.character(df$location_name)
 
 recordsum <- ddply(df, c("location_name", "Spp"), summarise, 
                    surv = length(species))
-#now merge this back into the original csv - we don't want to delete any files at this stage
 wp <- merge(df, recordsum, c("location_name","Spp")) #merge with original dataset - adds surv column onto end of dataset
 
 
 # define some useful variables:
-spn<-length(unique(df$Spp))
-loc<-length(unique(df$location_name))
-locs<-length(unique(df$site_name))
+spn<-length(unique(df$Spp)) # no. of species
+loc<-length(unique(df$location_name)) # no. of detectors
+locs<-length(unique(df$site_name)) # no. of sites, should be 1
+timediff<-difftime(max(df$Night),min(df$Night), units='days') # time difference in days between earliest and latest date included
 
-# for the dates graphs, when >1 loc & >1 spp
-n_pages <- ceiling(nrow(unique(df[,c("species", "location_name")]))/8)
 
-# when 1 loc & >1 spp
+## the following "n_pages.." variables are used to get a number for how many pages facet_wrap_paginate needs to plot over for certain graphs. Basically work out how many individual graphs there will be, and divide by the number you want per page, and round UP using 'ceiling':
+
+n_pages <- ceiling(nrow(unique(df[,c("species", "location_name")]))/8) # e.g. we have species and location plotted together and we want 8 graphs per page, so how many pages do we need? This will be "n_pages" - this becomes "i" in the 'for' function for facet_wrap_paginate
+
 n_pages1 <- ceiling(nrow(unique(df[,c("species", "location_name")]))/5)
 
 n_pages_sploc <- ceiling(nrow(unique(df[,c("species", "location_name")]))/6)
@@ -450,7 +447,6 @@ n_pages2 <- ceiling(nrow(unique(df[,c("species")]))/4)
 n_pages_months <- ceiling(nrow(unique(df[,c("Month")]))/4)
 
 
-cbbPalette <- c("#D55E00", "#0072B2","#56B4E9","#009E73","#E69F00") #set colour palette for graphs
 ```
 
 ## PART 1: Percentiles Analysis
@@ -494,8 +490,6 @@ The reference range dataset was stratified to include:
 
 ## PER DETECTOR
 
-#### Table 1
-
 Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r summary tables}
 
@@ -524,8 +518,6 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ```
 
 ##### Page Break
-
-#### Table 2
 
 Summary table showing key metrics for each species recorded. The reference range is the number of nights for each species that your data were compared to. We recommend a Reference Range of 2000+ to be confident in the relative activity level.
 
@@ -681,7 +673,7 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre
 
 # box_basplot (df) + xxxx 
 
-## the for statement plots the graphs over multiple pages using facet_grid_paginate otherwise they're too squashed up
+## the for statement plots the graphs over multiple pages using facet_grid/wrap_paginate otherwise they're too squashed up. "wrap" will create lots of separate graphs with the header at the top (most frequently used here), "grid" creates a grid of the graphs with the title on the right y axis.
 
 box_baseplot = function (df) {
   
@@ -785,6 +777,8 @@ box_baseplot(df)
 
 ```{r night-percentile base plot}
 
+## this is the function that plots out the base plot for the night-percentile graphs. So you just need to enter what the dataframe and breaks are, e.g. graph_baseplot(data, "1 week")
+
 graph_baseplot = function (df, breaks) {
   
 graph_base <- ggplot(df, aes(x= Night, y= percentile)) +
@@ -827,28 +821,24 @@ return(graph_base)
 
 ```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc=="1" & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
+**Figure 3.** The activity level (percentile) of bats recorded across each night of the bat survey.
 
 ```{r fig.width=9, fig.height=12}
 
-## Night ~ percentile graph if 1 location, 1 species
-#if less than or equal to 21 days
+## timediff less than 21 days - breaks = 3 days
 
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc=="1" & spn=="1") { 
+# 1 location, 1 species
+
+if(timediff<=21 & loc=="1" & spn=="1") { 
   
   graph_baseplot(df, "3 days") 
   
 }
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc=="1" & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+# 1 location, >1 species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, >1 species
-#if less than 21 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc=="1" & spn>1) {
+if(timediff<=21 & loc=="1" & spn>1) {
   
   for (i in seq_len(n_pages1)) {
   
@@ -859,56 +849,26 @@ if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc=="1" & spn>1)
   }
 }  
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>1 & loc<=5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+# 1 species and 2-5 locations
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 2-5 locations + >1 species
-#less than or equal to 21 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>1 & loc<=5 & spn>1) {
+if(timediff<=21 & loc>1 & loc<=5 & spn=="1") {
   
-  for (i in seq_len(n_pages)) {
-  
-  print(graph_baseplot(df, "1 week") +
-  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                      scales="fixed", page=i) +
-  theme(strip.text.x = element_text(size=12, face="italic"),
-        strip.text.y = element_text(size=12)))
-  }
-}
-
-```
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>1 & loc<=5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and 2-5 locations
-#less than or equal to 21 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>1 & loc<=5 & spn=="1") {
-  
-  graph_baseplot(df, "1 week") +
+  graph_baseplot(df, "3 days") +
   facet_grid(. ~ location_name) +
   theme(strip.text.x = element_text(size=12))
 }
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+# several graphs that need splitting by location and species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if >5 location + >1 species
-#less than or equal to 21 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>5 & spn>1) {
+if((timediff<=21 & loc>1 & loc<=5 & spn>1) || (timediff<=21 & loc>5 & spn>1) || (timediff<=21 & loc>5 & spn=="1")) {
   
   for (i in seq_len(n_pages)) { 
     
-  print(graph_baseplot(df, "1 week") +
+  print(graph_baseplot(df, "3 days") +
   facet_wrap_paginate(species ~ location_name, ncol=2,
-                            nrow=4, page=i) +
+                            nrow=4, scales="fixed", page=i) +
   theme(strip.text.x = element_text(size=12, face="italic"),
         strip.text.y = element_text(size=12)))
   }
@@ -917,46 +877,22 @@ if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>5 & spn>1) {
 ```
 
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
 ```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and >5 location
-#less than or equal to 21 days
 
-if((difftime(max(df$Night),min(df$Night), units='days')<=21) & loc>5 & spn=="1") { 
-  
-  for (i in seq_len(n_pages)) { 
-    print(graph_baseplot(df, "1 week") +
-    facet_wrap_paginate(species ~ location_name, ncol=2,
-                        nrow=4, scales="fixed", page=i) +
-    theme(strip.text.x = element_text(size=12, face="italic")))
-  }
-}
+## timediff is 21-50 days - breaks = 1 week
 
-```
+# 1 location, 1 species
 
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc=="1" & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
-
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, 1 species
-#if time difference is between 21 and 50 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc=="1" & spn=="1"){
+if(timediff>21 & timediff<=50 & loc=="1" & spn=="1"){
   
   graph_baseplot(df, "1 week")
   
 }
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc=="1" & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+# 1 location, >1 species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, >1 species
-#if time difference is between 21 and 50 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc=="1" & spn>1) { 
+if(timediff>21 & timediff<=50 & loc=="1" & spn>1) { 
   
   for (i in seq_len(n_pages1)) {
   
@@ -967,15 +903,21 @@ if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$N
   }
 }
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>1 & loc<=5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+# 1 species and 2-5 locations
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 2-5 locations + >1 species
-#if time difference is between 21 and 50 days 
+if(timediff>21 & timediff<=50 & loc>1 & loc<=5 & spn=="1") { 
+  
+  graph_baseplot(df, "1 week") +
+  facet_grid(. ~ location_name) +
+  theme(strip.text.x = element_text(size=12, face="italic"))
+  
+}
 
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>1 & loc<=5 & spn>1){
+
+# several graphs that need splitting by location and species
+
+if((timediff>21 & timediff<=50 & loc>1 & loc<=5 & spn>1) || (timediff>21 & timediff<=50 & loc>5 & spn>1) || (timediff>21 & timediff<=50 & loc>5 & spn=="1")) {
   
   for (i in seq_len(n_pages)) {
     
@@ -990,88 +932,22 @@ if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$N
 ```
 
 
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>1 & loc<=5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
 ```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and 2-5 locations
-#if time difference is between 21 and 50 days 
 
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>1 & loc<=5 & spn=="1") { 
-  
-  graph_baseplot(df, "1 week") +
-  facet_grid(. ~ location_name) +
-  theme(strip.text.x = element_text(size=12, face="italic"))
-  
-}
+## timediff 50-300 days - breaks = 3 weeks
 
-```
+# 1 location, 1 species
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
-
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if >5 location + >1 species
-#if time difference is between 21 and 50 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>5 & spn>1) {
-  
-  for (i in seq_len(n_pages)) { 
-    
-    print(graph_baseplot(df, "1 week") +
-    facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                        scales="fixed", page=i) +
-    theme(strip.text.x = element_text(size=12, face="italic"),
-          strip.text.y = element_text(size=12)))
-    
-  }
-}
-
-```
-
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and >5 location
-#if time difference is between 21 and 50 days 
-
-if((difftime(max(df$Night),min(df$Night), units='days')>21) & (difftime(max(df$Night),min(df$Night), units='days')<=50) & loc>5 & spn=="1"){
-  
-  for (i in seq_len(n_pages)) { 
-    
-    print(graph_baseplot(df, "1 week") +
-    facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                        scales="fixed", page=i) +
-    theme(strip.text.x = element_text(size=12, face="italic")))
-    
-  }
-}
-
-```
-
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc=="1" & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
-
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, 1 species
-#if time diff between 50 and 300 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc=="1" & spn=="1"){ 
+if(timediff>50 & timediff<=300 & loc=="1" & spn=="1"){ 
   
   graph_baseplot(df, "3 weeks")
 
 }
 
-```
 
+# 1 location, >1 species
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc=="1" & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
-
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, >1 species
-#if time diff between 50 and 300 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc=="1" & spn>1) {
+if(timediff>50 & timediff<=300 & loc=="1" & spn>1) {
   
   for (i in seq_len(n_pages1)) {
   
@@ -1083,16 +959,20 @@ if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$N
  }
 }
 
-```
+
+# 1 species and 2-5 locations
+
+if(timediff>50 & timediff<=300 & loc>1 & loc<=5 & spn=="1"){   
+  
+  graph_baseplot(df, "3 weeks") +
+  facet_grid(. ~ location_name) +
+  theme(strip.text.x = element_text(size=12))
+}
 
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>1 & loc<=5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+# several graphs that need splitting by location and species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 2-5 locations + >1 species
-#if time diff between 50 and 300 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>1 & loc<=5 & spn>1) {
+if((timediff>50 & timediff<=300 & loc>1 & loc<=5 & spn>1) || (timediff>50 & timediff<=300 & loc>5 & spn>1) || (timediff>50 & timediff<=300 & loc>5 & spn=="1")) {
   
   for (i in seq_len(n_pages)) {
   
@@ -1104,87 +984,26 @@ if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$N
   }
 }
 
-```
-
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>1 & loc<=5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and 2-5 locations
-#if time diff between 50 and 300 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>1 & loc<=5 & spn=="1"){   
-  
-  graph_baseplot(df, "3 weeks") +
-  facet_grid(. ~ location_name) +
-  theme(strip.text.x = element_text(size=12))
-}
 
 ```
 
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
-
 ```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if >5 location + >1 species
-#if time diff between 50 and 300 days
 
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>5 & spn>1) {
-  
-for (i in seq_len(n_pages)) {
-  
-  print(graph_baseplot(df, "3 weeks") +
-  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                      scales="fixed", page=i) +
-  theme(strip.text.x = element_text(size=12, face="italic"),
-        strip.text.y = element_text(size=12)))
-  }
-}
+## if data spans more than a year - breaks = 12 weeks
 
-```
+# 1 location, 1 species
 
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and >5 location
-#if time diff between 50 and 300 days
-
-if((difftime(max(df$Night),min(df$Night), units='days')>50) & (difftime(max(df$Night),min(df$Night), units='days')<=300) & loc>5 & spn=="1") {
-  
-   for (i in seq_len(n_pages)) { 
-     
-  print(graph_baseplot(df, "3 weeks") +
-  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                      scales="fixed", page=i) +
-  theme(strip.text.x = element_text(size=12, face="italic"),
-        strip.text.y = element_text(size=12)))  
-   }
-}
-
-```
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc=="1" & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey.  '}`
-
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, 1 species
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc=="1" & spn=="1") {  
+if(timediff>300 & loc=="1" & spn=="1") {  
   
   graph_baseplot(df, "12 weeks")
   
 }
 
-```
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc=="1" & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by species.  '}`
+# 1 location, >1 species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 1 location, >1 species
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc=="1" & spn>1) {
+if(timediff>300 & loc=="1" & spn>1) {
   
   for (i in seq_len(n_pages1)) {
   
@@ -1195,16 +1014,21 @@ if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc=="1" & spn>1)
   }
 }
 
-```
+
+# 1 species and 2-5 locations
+
+if(timediff>300 & loc>1 & loc<=5 & spn=="1") {
+  
+  graph_baseplot(df, "12 weeks") +
+  facet_grid(. ~ location_name) +
+  theme(strip.text.x = element_text(size=12))
+  
+}
 
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>1 & loc<=5 & spn>1) {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
+# several graphs that need splitting by location and species
 
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if 2-5 locations + >1 species
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>1 & loc<=5 & spn>1) {
+if((timediff>300 & loc>1 & loc<=5 & spn>1) || (timediff>300 & loc>5 & spn>1) || (timediff>300 & loc>5 & spn=="1")) {
   
   for (i in seq_len(n_pages)) {
   
@@ -1219,67 +1043,9 @@ if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>1 & loc<=5 & 
 ```
 
 
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>1 & loc<=5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-# Night ~ percentile graph if 1 species and 2-5 locations
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>1 & loc<=5 & spn=="1") {
-  
-  graph_baseplot(df, "12 weeks") +
-  facet_grid(. ~ location_name) +
-  theme(strip.text.x = element_text(size=12))
-  
-}
-
-```
-
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location and species.  '}`
-```{r fig.width=9, fig.height=12}
-## Night ~ percentile graph if >5 location + >1 species
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>5 & spn>1) {
-  
-   for (i in seq_len(n_pages)) { 
-    
-  print(graph_baseplot(df, "12 weeks") +
-  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                      scales="fixed", page=i) +
-  theme(strip.text.y = element_text(size=12, face="italic"),
-        strip.text.x = element_text(size=12)))
-  }
-}
-
-```
-
-
-`r if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>5 & spn=="1") {'**Figure 3.**\n The activity level (percentile) of bats recorded across each night of the bat survey, split by location.  '}`
-
-```{r fig.width=9, fig.height=12}
-
-# Night ~ percentile graph if 1 species and >5 location
-#if data spans more than a year
-
-if((difftime(max(df$Night),min(df$Night), units='days')>300) & loc>5 & spn=="1"){ 
-  
-  for(i in seq_len(n_pages)) {
-  
-  print(  graph_baseplot(df, "12 weeks") +
-  facet_wrap_paginate(species ~ location_name, ncol=2, nrow=4,
-                      scales="fixed", page=i) +
-  theme(strip.text.x = element_text(size=12)))
-  }
-}
-```
-
 ##### Page Break
 
 ## PER DETECTOR, PER MONTH
-
-#### Table 1
 
 Summary table showing the number of nights recorded bat activity fell into each activity band for each species at each detector during each month.
 
@@ -1313,8 +1079,6 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ```
 
 ##### Page Break
-
-#### Table 2
 
 Summary table showing key metrics for each species recorded per month. Please note that we cannot split the reference range by month, hence this column is not shown in this table.
 
@@ -1420,8 +1184,6 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre
 
 \newline
 
-#### Table 1
-
 Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r}
 actdata <- plyr::ddply(df, c("species"), summarise,
@@ -1447,8 +1209,6 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ```
 
 ##### Page Break
-
-#### Table 2
 
 Summary table showing key metrics for each species recorded.
 
@@ -1553,7 +1313,7 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre
 
 #boxplot if 1 location
 
-graphbox<-ggplot(df, aes(x=Spp, y=percentile))+ #add lines first
+graphbox<-ggplot(df, aes(x=Spp, y=percentile)) + 
   geom_hline(aes(yintercept=0), linetype="dashed",
              color="#000000") +
   geom_hline(aes(yintercept=20), linetype="dashed",
@@ -1592,6 +1352,8 @@ graphbox
 
 ```{r median medians}
 
+# get the site-wide medians
+
 df$percentiles <- as.numeric(df$percentile)
 
 medians <- df %>%
@@ -1600,6 +1362,7 @@ medians <- df %>%
   dplyr::group_by(Night, Spp) %>%
   dplyr::mutate(med = median(percentiles)) %>%
   dplyr::arrange(Night)
+
 
 ```
 
@@ -1652,26 +1415,26 @@ return(graph_medians)
   
 }
 
+
 ```
 
 
-```{r fig.width=7, fig.height=9}
-## Night ~ med graph if 1 location, 1 species
-#if less than 21 days
+```{r fig.width=9, fig.height=10}
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')<=21) & locs=="1" & spn=="1"){
+## if time difference less than 21 days - breaks = 3 days
+
+# 1 location, 1 species
+
+if(timediff<=21 & locs=="1" & spn=="1") {
   
     median_baseplot(medians, "3 days") 
   
 }
 
-```
 
-```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, >1 species
-#if less than 21 days
+# 1 location, >1 species
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')<=21) & locs=="1" & spn>1) {
+if(timediff<=21 & locs=="1" & spn>1) {
   
   for (i in seq_len(n_pages2)) {
   
@@ -1687,21 +1450,20 @@ if((difftime(max(medians$Night),min(medians$Night), units='days')<=21) & locs=="
 
 
 ```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, 1 species
-#if time difference is between 21 and 50 days 
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')>21) & (difftime(max(medians$Night),min(medians$Night), units='days')<50) & locs=="1" & spn=="1"){
+## if time difference is between 21 and 50 days - breaks = 1 week
+
+# 1 location, 1 species
+
+if(timediff>21 & timediff<50 & locs=="1" & spn=="1") {
   
       median_baseplot(medians, "1 week") 
 }
 
-```
 
-```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, >1 species
-#if time difference is between 21 and 50 days 
+# 1 location, >1 species
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')>21) & (difftime(max(medians$Night),min(medians$Night), units='days')<50) & locs=="1" & spn>1) { 
+if(timediff>21 & timediff<50 & locs=="1" & spn>1) { 
   
   for (i in seq_len(n_pages2)) {
   
@@ -1717,22 +1479,21 @@ if((difftime(max(medians$Night),min(medians$Night), units='days')>21) & (difftim
 
 
 ```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, 1 species
-#if time diff between 50 and 300 days
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')>50) & (difftime(max(medians$Night),min(medians$Night), units='days')<300) & locs=="1" & spn=="1") { 
+# if time diff between 50 and 300 days - breaks = 3 weeks
+
+# 1 location, 1 species
+
+if(timediff>50 & timediff<300 & locs=="1" & spn=="1") { 
   
   median_baseplot(medians, "3 weeks") 
 
 }
 
-```
 
-```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, >1 species
-#if time diff between 50 and 300 days
+# 1 location, >1 species
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')>50) & (difftime(max(medians$Night),min(medians$Night), units='days')<300) & locs=="1" & spn>1) {
+if(timediff>50 & timediff<300 & locs=="1" & spn>1) {
   
   for (i in seq_len(n_pages2)) {
   
@@ -1748,23 +1509,21 @@ if((difftime(max(medians$Night),min(medians$Night), units='days')>50) & (difftim
 
 
 ```{r fig.width=9, fig.height=10}
-## Night ~ med graph if 1 location, 1 species
-#if data spans more than a year
 
-if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs=="1" & spn=="1"){
+# if data spans more than a year - breaks - 12 weeks
+
+# 1 location, 1 species
+
+if(timediff>=300 & locs=="1" & spn=="1"){
   
   median_baseplot(medians, "12 weeks")
    
 }
 
-```
 
+# 1 location, >1 species
 
-```{r fig.width=9, fig.height=8}
-## Night ~ med graph if 1 location, >1 species
-#if data spans more than a year
-
-if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs=="1" & spn>1) {
+if(timediff>=300 & locs=="1" & spn>1) {
   
   for (i in seq_len(n_pages2)) {
   
@@ -1782,9 +1541,6 @@ if((difftime(max(medians$Night),min(medians$Night), units='days')>=300) & locs==
 ##### Page Break
 
 ## PER SITE, PER MONTH
-
-
-#### Table 1
 
 Summary table showing the number of nights recorded bat activity fell into each activity band for each species during each month.
 ```{r}
@@ -1814,8 +1570,6 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 ```
 
 ##### Page Break
-
-#### Table 2
 
 Summary table showing key metrics for each species recorded per month. 
 ```{r}
@@ -1918,12 +1672,9 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre
 
 ```{r fig.width=9, fig.height=10}
 
-#boxplot if 1 location
-
-      for (i in seq_len(n_pages_months)){
-
-
-print(ggplot(df, aes(x=Spp, y=percentile)) + 
+  for (i in seq_len(n_pages_months)){
+    
+  print(ggplot(df, aes(x=Spp, y=percentile)) + 
   geom_hline(aes(yintercept=0), linetype="dashed",
              color="#000000") +
   geom_hline(aes(yintercept=20), linetype="dashed",
@@ -1972,7 +1723,7 @@ print(ggplot(df, aes(x=Spp, y=percentile)) +
 
 ```{r infer zeros}
 
-## in this bit of code we have to 'infer zeros' on nights when some species were recorded but not others. So spread the data out and include 0s where NAs
+## in this bit of code we have to 'infer zeros' on nights when some species were recorded but not others. So spread the data out and include 0s where NAs. Just run through each line one at a time if you need to understand better what's happening here.
 
 df_spr <- df %>%
   dplyr::select(location_name, lat, lon, Night, Spp,
@@ -2003,7 +1754,7 @@ df_zero <- df_z3 %>%
 df_zero$Month <- as.character(df_zero$Month)
 
 ```
-
+ 
 
 # ENTIRE SURVEY PERIOD
 
@@ -2031,7 +1782,7 @@ knitr::kable(Table, align = "cccc")
 # Distribution of Bat Activity Across the Night through Time
 ## Per Detector
 
-**Figure 7.** Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. Colours indicate kernel densities, with darkest colours showing peaks of activity. These colours are comparative only within each plot, and do not account for overall activity.**
+**Figure 7.** Timing of bat calls plotted as minutes before/after sunset, whereby 0 on the y axis represents sunset. Sunrise throughout the survey period is depicted as the red dashed line. Colours indicate kernel densities, with darkest colours showing peaks of activity. These colours are comparative only within each plot, and do not account for overall activity.
 
 ```{r, fig.width=10, fig.height=12}
 
@@ -2159,31 +1910,37 @@ print(ggplot(All_data, aes(x=post_set_min, y=Spp, colour=Spp)) +
 }
 
 
+
+
 ```
 
 
 ```{r}
 
-# adding a column for Day-Month to be used to see if maternity period is included or not
+#### MATERNITY PERIOD ####
 
-sun_data$month <- lubridate::month(sun_data$Night, label = TRUE)
-sun_data$nday <- lubridate::day(sun_data$Night)
-sun_data$Day <- paste(sun_data$nday, sun_data$month, sep = "-")
+# need to repeat the above tables/graphs for the maternity period (15th June - 30th July) - but only if the survey was conducted over these days, so first we need to see if these dates are included in the data:
 
-
-# also add this to All_data - WILL ADD CURRENT YEAR AS YEAR SO NEEDS CHANGING IN GGPLOT CODE BELOW AT THE TURN OF EACH NEW YEAR
+# add a column for Day-Month to be used to see if maternity period is included or not
+# ADDS CURRENT YEAR AS YEAR SO NEEDS CHANGING IN GGPLOT CODE BELOW AT THE TURN OF EACH NEW YEAR
 All_data$month <- lubridate::month(All_data$Night)
 All_data$nday <- lubridate::day(All_data$Night)
-All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format = "%d-%m")
+All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format = "%d-%m") #misses year so puts the current year in
+
+# create a vector of dates that fall within the maternity period
+# remember to change the year to 2020 in the new year!!
+matern_days <- seq(as.Date("2019-06-15"), as.Date("2019-07-30"), by="days")
 
 ```
 
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
+`r if (any(matern_days %in% All_data$Day)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
 
 ```{r}
 
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
+# then we can say, if any of the maternity dates feature in the Day column of the dataframe, then we have data from within the maternity period so make a new table and graphs, if not, give a message there's no data within this period
 
+if (any(matern_days %in% All_data$Day)) {
+  
   Maternity <- All_data %>%
   dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
   dplyr::filter(post_set_min <= upper) %>%
@@ -2196,6 +1953,7 @@ if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_da
   replace(is.na(.), 0)
   
 }
+
 
 if (exists("Maternity") == TRUE){
   if (any(is.na(Maternity$Species)) == FALSE) {
@@ -2211,17 +1969,20 @@ if (exists("Maternity") == TRUE){
 ```
 `r if (exists("Maternity") == TRUE) {if (any(is.na(Maternity$Species)) == TRUE) {'During the maternity period, no bat calls were detected at a time that would indicate proximity to a roost. Please see the figures below for a visual representation.'}}`
 
-`r if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figure 9.** *Maternity period defined as 15th June - 30th July.*' }`
+`r if (any(matern_days %in% All_data$Day)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Figure 9.** *Maternity period defined as 15th June - 30th July.*' }`
 
 ```{r fig.width=22, fig.height=15}
 
+#NEEDS CHANGING EACH YEAR - so add 2020 on 01/01/2020 and 2021 on 01/01/2021 etc (due to the code 2 chunks above)
+matern_data <- All_data %>%
+    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30")
 
-if ((is.element("15-Jun", sun_data$Day) == TRUE) || (is.element("30-Jul", sun_data$Day) == TRUE)) {
 
-for (i in seq_len(length(unique(All_data$location_name)))) {
+if (any(matern_days %in% All_data$Day)) {
 
- print(All_data %>%
-    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>% #NEEDS CHANGING EACH YEAR!
+for (i in seq_len(length(unique(matern_data$location_name)))) {
+
+ print(matern_data %>%
     ggplot(aes(x=post_set_min, y=Spp, colour=Spp)) +
     geom_segment(aes(x=lower, xend=upper, y=Spp, yend=Spp),
                  size = 25, colour="grey") +
@@ -2745,7 +2506,7 @@ print(ggplot(Table, aes(lon, lat)) +
 
 ##### Page Break
 
-**Figure 15.** Maximum Nightly Pass Rate (bat passes/hr/night) recorded in a single night throughout the survey period - represented by the size and colour of the point at each detector location.**
+**Figure 15.** Maximum Nightly Pass Rate (bat passes/hr/night) recorded in a single night throughout the survey period - represented by the size and colour of the point at each detector location.
 
 ```{r, fig.width=8, fig.height=10}
 
