@@ -300,7 +300,7 @@ All_data$Spp <- factor(All_data$Spp,levels=c("Pipistrellus", "Common pipistrelle
 
 # Summary
 
-Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(species_list))`** species were recorded. Detectors were placed at the following locations:
+Bats were detected on **`r Surv.days.N`** nights between **`r min(All_data$Night)`** and **`r max(All_data$Night)`**, using **`r (length(Dets))`** static bat detectors. Throughout this period **`r (length(species_list))`** species were recorded. **Table 1.** Detectors were placed at the following locations:
 
 ```{r det locations}
 
@@ -320,7 +320,7 @@ knitr::kable(Table, align = "l")
 ##### Page Break
 
 # Survey Nights
-The number of nights that bats were detected on each recorder. This is not the same as the number of nights that detectors were active if there were nights when no bats were detected.
+**Table 2.** The number of nights that bats were detected on each recorder. This is not the same as the number of nights that detectors were active if there were nights when no bats were detected.
 
 ```{r detector nights}
 
@@ -490,7 +490,7 @@ The reference range dataset was stratified to include:
 
 ## PER DETECTOR
 
-Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
+**Table 3.** Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r summary tables}
 
 
@@ -519,7 +519,7 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 ##### Page Break
 
-Summary table showing key metrics for each species recorded. The reference range is the number of nights for each species that your data were compared to. We recommend a Reference Range of 2000+ to be confident in the relative activity level.
+**Table 4.** Summary table showing key metrics for each species recorded. The reference range is the number of nights for each species that your data were compared to. We recommend a Reference Range of 2000+ to be confident in the relative activity level.
 
 \newline 
 
@@ -1047,7 +1047,7 @@ if((timediff>300 & loc>1 & loc<=5 & spn>1) || (timediff>300 & loc>5 & spn>1) || 
 
 ## PER DETECTOR, PER MONTH
 
-Summary table showing the number of nights recorded bat activity fell into each activity band for each species at each detector during each month.
+**Table 5.** Summary table showing the number of nights recorded bat activity fell into each activity band for each species at each detector during each month.
 
 \newline 
 
@@ -1080,7 +1080,7 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 ##### Page Break
 
-Summary table showing key metrics for each species recorded per month. Please note that we cannot split the reference range by month, hence this column is not shown in this table.
+**Table 6.** Summary table showing key metrics for each species recorded per month. Please note that we cannot split the reference range by month, hence this column is not shown in this table.
 
 \newline 
 
@@ -1184,7 +1184,7 @@ pander(medtable2, style = 'multiline', keep.line.breaks=TRUE,justify = c('centre
 
 \newline
 
-Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
+**Table 7.** Summary table showing the number of nights recorded bat activity fell into each activity band for each species.
 ```{r}
 actdata <- plyr::ddply(df, c("species"), summarise,
                  Nights.high = sum(activity_level=="high"),
@@ -1210,7 +1210,7 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 ##### Page Break
 
-Summary table showing key metrics for each species recorded.
+**Table 8.** Summary table showing key metrics for each species recorded.
 
 \newline 
 
@@ -1542,7 +1542,7 @@ if(timediff>=300 & locs=="1" & spn>1) {
 
 ## PER SITE, PER MONTH
 
-Summary table showing the number of nights recorded bat activity fell into each activity band for each species during each month.
+**Table 9.** Summary table showing the number of nights recorded bat activity fell into each activity band for each species during each month.
 ```{r}
 
 actdata <- plyr::ddply(df, c("species", "Month"), summarise,
@@ -1571,7 +1571,7 @@ pander(datatable2, style = 'rmarkdown', keep.line.breaks=TRUE)
 
 ##### Page Break
 
-Summary table showing key metrics for each species recorded per month. 
+**Table 10.** Summary table showing key metrics for each species recorded per month. 
 ```{r}
 
 if (mean(wp$surv) >= 2) {
@@ -1759,7 +1759,7 @@ df_zero$Month <- as.character(df_zero$Month)
 # ENTIRE SURVEY PERIOD
 
 ## Sunrise and Sunset Times  
-**The times of sunset and sunrise the following morning for surveys beginning on the date shown.**
+**Table 11. The times of sunset and sunrise the following morning for surveys beginning on the date shown.**
 
 ```{r}
 Table <- All_data %>% 
@@ -1839,7 +1839,7 @@ For more information see <https://rbats-blog.updog.co/2018/05/29/bat-emergence/>
 
 ## Bat Passes Potentially Indicating Close Proximity to a Roost (Russ 2012) - Table
 
-**Number of bat calls recorded before the upper time of the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
+**Table 12. Number of bat calls recorded before the upper time of the species-specific emergence time range, and which therefore may potentially indicate the presence of a nearby roost.**
 
 \newline  \newline
 ```{r}
@@ -1928,12 +1928,12 @@ All_data$nday <- lubridate::day(All_data$Night)
 All_data$Day <- as.Date(paste(All_data$nday, All_data$month, sep = "-"), format = "%d-%m") #misses year so puts the current year in
 
 # create a vector of dates that fall within the maternity period
-# remember to change the year to 2020 in the new year!!
-matern_days <- seq(as.Date("2019-06-15"), as.Date("2019-07-30"), by="days")
+# remember to change the year to 2021 in the new year!!
+matern_days <- seq(as.Date("2020-06-15"), as.Date("2020-07-30"), by="days")
 
 ```
 
-`r if (any(matern_days %in% All_data$Day)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table:** \n *Maternity period defined as 15th June - 30th July.*' }`
+`r if (any(matern_days %in% All_data$Day)) {'##### Page Break\n### Bat Passes Potentially Indicating Close Proximity to a Roost (Maternity Period Only)\n **Table 13:** \n *Maternity period defined as 15th June - 30th July.*' }`
 
 ```{r}
 
@@ -1942,7 +1942,7 @@ matern_days <- seq(as.Date("2019-06-15"), as.Date("2019-07-30"), by="days")
 if (any(matern_days %in% All_data$Day)) {
   
   Maternity <- All_data %>%
-  dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30") %>%
+  dplyr::filter(Day >= "2020-06-15" & Day <= "2020-07-30") %>%
   dplyr::filter(post_set_min <= upper) %>%
   dplyr::group_by(Night, Spp, location_name) %>%
   dplyr::count() %>%
@@ -1975,7 +1975,7 @@ if (exists("Maternity") == TRUE){
 
 #NEEDS CHANGING EACH YEAR - so add 2020 on 01/01/2020 and 2021 on 01/01/2021 etc (due to the code 2 chunks above)
 matern_data <- All_data %>%
-    dplyr::filter(Day >= "2019-06-15" & Day <= "2019-07-30")
+    dplyr::filter(Day >= "2020-06-15" & Day <= "2020-07-30")
 
 
 if (any(matern_days %in% All_data$Day)) {
@@ -2029,10 +2029,10 @@ for (i in seq_len(length(unique(matern_data$location_name)))) {
 # Counts of Bat Passes
 ## All detectors
 
-**The total number of passes recorded for each species across all of the detectors.**
+**Table 14. The total number of passes recorded for each species across all of the detectors.**
 The 'Total' percentage may not be exactly 100% due to rounding of the percentages per species.
 
-\newline  \newline
+\newline  \newlinen 
 ```{r}
 
 # Aggregate data into species and count
@@ -2056,7 +2056,7 @@ knitr::kable(Table, align = "lcc")
 ```
 
 
-`r if(length(Dets)>1) {'##### Page Break\n# Counts of Bat Passes\n## Per Detector\n **The number of passes recorded for each species at each detector.**\n\n' }`
+`r if(length(Dets)>1) {'##### Page Break\n# Counts of Bat Passes\n## Per Detector\n **Table 15. The number of passes recorded for each species at each detector.**\n\n' }`
 
 
 ```{r}
@@ -2149,7 +2149,7 @@ ggplot(Calls_perc, aes(x = location_name, y = Percentage,
 ## Nightly Bat Pass Rate (Bat passes per hour)
 # Median Per Detector
 
-**The median Nightly Pass Rate (bat passes per hour, per night) of each species. If NA, then no bat passes.**
+**Table 16. The median Nightly Pass Rate (bat passes per hour, per night) of each species. If NA, then no bat passes.**
 
 Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
@@ -2175,7 +2175,7 @@ knitr::kable(Table, align="lcc")
 ## Nightly Bat Pass Rate (Bat passes per hour)
 # Mean per Detector
 
-**The mean Nightly Pass Rate (bat passes per hour, per night) of each species at each detector. Values are given to 1 decimal place.**
+**Table 17. The mean Nightly Pass Rate (bat passes per hour, per night) of each species at each detector. Values are given to 1 decimal place.**
 
 \newline
 
@@ -2245,7 +2245,7 @@ knitr::kable(Table, align="lcc")
 # Total Bat Passes per Detector, each Month 
 ## Per Detector
 
-**The total number of bat passes of each species in each month at each detector.**
+**Table 18. The total number of bat passes of each species in each month at each detector.**
 This table simply tells you how many bats of each species were recorded passing each detector during each month. These numbers are not standardised by the night length, or how many nights each detector was active for during each month.
 
 \newline 
@@ -2278,7 +2278,7 @@ pander(Table, style = "multiline", justify = "left")
 ##### Page Break
 
 # Survey Effort
-**The number of survey nights per month per detector.**
+**Table 19. The number of survey nights per month per detector.**
 
 ```{r}
 
@@ -2301,7 +2301,7 @@ knitr::kable(Table, align = "lcc")
 ## Nightly Bat Pass Rate for each Month 
 # Median Per Detector
 
-**The median Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. If NA, then no bat passes.**
+**Table 20. The median Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. If NA, then no bat passes.**
 
 Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
@@ -2327,7 +2327,7 @@ knitr::kable(Table)
 ## Nightly Bat Pass Rate for each Month 
 # Mean per Detector
 
-**The mean Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. Values are given to 1 decimal place.**
+**Table 21: The mean Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. Values are given to 1 decimal place.**
 
 \newline
 
@@ -2573,7 +2573,7 @@ print(ggplot(Table, aes(lon, lat)) +
 ## Nightly Bat Pass Rate (Bat passes per hour)
 # Median Per Detector
 
-**The median Nightly Pass Rate (bat passes per hour, per night) of each species. If NA, then no bat passes.**
+**Table 22. The median Nightly Pass Rate (bat passes per hour, per night) of each species. If NA, then no bat passes.**
 
 Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
@@ -2599,7 +2599,7 @@ knitr::kable(Table, align="l")
 ## Nightly Bat Pass Rate (Bat passes per hour)
 # Mean per Detector
 
-**The mean Nightly Pass Rate (bat passes per hour, per night) of each species at each detector. Values are given to 1 decimal place.**
+**Table 23. The mean Nightly Pass Rate (bat passes per hour, per night) of each species at each detector. Values are given to 1 decimal place.**
 
 \newline
 
@@ -2665,7 +2665,7 @@ knitr::kable(Table, align="l")
 ##### Page Break
 
 # Survey Effort
-**The number of survey nights per month per detector.**
+**Table 24. The number of survey nights per month per detector.**
 
 ```{r}
 
@@ -2688,7 +2688,7 @@ knitr::kable(Table, align = "lc")
 ## Nightly Bat Pass Rate for each Month 
 # Median Per Detector
 
-**The median Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. If NA, then no bat passes.**
+**Table 25. The median Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. If NA, then no bat passes.**
 
 Bat pass rates are often highly variable between nights, with some nights having few or no passes and other nights having high activity.  In these circumstances, the median is likely to be a more useful summary of the 'average' activity than is the mean. For further information see: *Lintott, P. R., & Mathews, F. (2018). Basic mathematical errors may make ecological assessments unreliable. Biodiversity and Conservation, 27(1), 265-267.* <https://doi.org/10.1007/s10531-017-1418-5>
 
@@ -2715,7 +2715,7 @@ knitr::kable(Table)
 ## Nightly Bat Pass Rate for each Month 
 # Mean per Detector
 
-**The mean Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. Values are given to 1 decimal place.**
+**Table 26. The mean Nightly Pass Rate (bat passes per hour, per night) of each species throughout each month. Values are given to 1 decimal place.**
 
 \newline
 
