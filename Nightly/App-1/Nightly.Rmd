@@ -459,9 +459,9 @@ The reference range dataset was stratified to include:
 
 `r if('0' %in% df$date_filter) {'* Records from any time of year.  '}`
 
-`r if('200' %in% df$location_filter) {'* Only records from within 200km^2^ of the survey location.  '}`
+`r if('200' %in% df$location_filter) {'* Only records from within 200km radius of the survey location.  '}`
 
-`r if('100' %in% df$location_filter) {'* Only records from within 100km^2^ of the survey location.  '}`
+`r if('100' %in% df$location_filter) {'* Only records from within 100km radius of the survey location.  '}`
 
 `r if("NO" %in% df$location_filter) {'* Records from across the entire UK.  '}`
 
@@ -2665,7 +2665,7 @@ knitr::kable(Table, align="l")
 ##### Page Break
 
 # Survey Effort
-**Table 24. The number of survey nights per month per detector.**
+**Table 24. The number of nights bats were detected per month per detector.**
 
 ```{r}
 
