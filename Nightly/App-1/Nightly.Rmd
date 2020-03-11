@@ -46,7 +46,7 @@ library(grid)
 # TESTING - load in test data / data that needs troubleshooting
 # this should be hashtagged out when deploying to Shiny.io
 
-B_data <- read.csv("./test_data.csv")
+#B_data <- read.csv("./test_data.csv")
 
 
 ```
@@ -57,7 +57,7 @@ B_data <- read.csv("./test_data.csv")
 # this is here for when the script is finalised and the Shiny app is deployed
 # read data in from shiny
 
-#B_data <- params$n
+B_data <- params$n
 
 ```
 
@@ -360,7 +360,7 @@ Effort <- All_data %>%
   replace(is.na(.), 0) %>%
   dplyr::mutate(start = if_else(diff_days == 0 | diff_days > 1, paste(as.Date(Night)), "")) %>%
   dplyr::mutate(end = if_else(start != "", paste(lag(as.Date(Night))), "")) %>%
-  dplyr::mutate(end = ifelse(row_number()==n(), paste(as.Date(Night)), end)) %>%
+  #dplyr::mutate(end = ifelse(row_number()==n(), paste(as.Date(Night)), end)) %>% #NOTE if someone has issues and they only have one row of data you may need to unhash this - see emails with Beth on 11/03/2020 info account
   dplyr::filter(start != "" | end != "") %>%
   dplyr::mutate_at(c("end"), funs(lead), n=1) %>%
   replace(is.na(.), 0) %>%
