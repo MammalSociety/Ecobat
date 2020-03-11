@@ -12,7 +12,7 @@ library(ggforce)
 library(janitor)
 
 
-options(shiny.maxRequestSize=50*1024^2)
+options(shiny.maxRequestSize=60*1024^2)
 # the default file size limit is 5MB, the above code ups it to 50MB
 
 shinyServer(function(input, output) {
